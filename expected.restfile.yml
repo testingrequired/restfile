@@ -1,0 +1,58 @@
+name: Example Collection
+description: >
+  A simple collection of requests with some environment variables and prompts.
+
+  This is a good demonstration of some basic functionality restfiles are aiming for.
+---
+env:
+  - BASE_URL
+---
+name: Get Posts
+description: Get all posts from the blog
+http: |
+  GET /posts HTTP/1.1
+  Host: http://example.com
+  Accept: application/json
+---
+name: Add Post
+description: Add post to blog
+headers:
+  host: http://example.com
+  content-type: application/json
+http: |
+  POST /posts HTTP/1.1
+  Host: http://example.com
+  Content-Type: application/json
+
+  {"date":"2020-01-02 11:00:46 +06:00","text":"Hello World"}
+---
+name: Get Post
+description: Get blog post by id
+headers:
+  host: http://example.com
+  accept: application/json
+http: |
+  GET /posts/1 HTTP/1.1
+  Host: http://example.com
+  Accept: application/json
+---
+name: Patch Post
+description: Get blog post by id
+body:
+  text: "Hello World!"
+headers:
+  host: http://example.com
+  content-type: application/json
+http: |
+  PATCH /posts/1 HTTP/1.1
+  Host: http://example.com
+  Content-Type: application/json
+
+  {"text":"Hello World!"}
+---
+name: Delete Post
+description: Delete a blog post
+headers:
+  host: http://example.com
+http: |
+  DELETE /posts/1 HTTP/1.1

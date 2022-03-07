@@ -1,15 +1,22 @@
 import { loadAll } from "js-yaml";
+import { Collection, Data, Request, RestFile } from "./types";
 
-export function asyncLoadAll<T>(content: string) {
-  return new Promise<T[]>((resolve, reject) => {
+export function asyncLoadAll(content: string) {
+  return new Promise<RestFile>((resolve, reject) => {
     try {
-      const docs: T[] = [];
+      const docs: Document[] = [];
 
       loadAll(content, (doc) => {
-        docs.push(doc as T);
+        docs.push(doc as Document);
       });
 
-      resolve(docs);
+      const [document, data, ...requests] = docs as unknown as [
+        Collection,
+        Data,
+        ...Request[]
+      ];
+
+      resolve([document, data, ...requests]);
     } catch (e) {
       reject(e);
     }
