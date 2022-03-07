@@ -39,18 +39,11 @@ export function parse(input: RestFile): RestFile {
 
     const httpMatches = prompt_rx.exec(outputRequest.http);
 
-    // console.log("httpMatches ", httpMatches);
-
     if (httpMatches?.length > 2) {
-      console.log(`replacing {{? ${httpMatches[1]}}} with ${httpMatches[2]}`);
-      const replacement = outputRequest.http.replace(
+      outputRequest.http = outputRequest.http.replace(
         `{{? ${httpMatches[1]} ${httpMatches[2]}}}`,
         httpMatches[2]
       );
-
-      outputRequest.http = replacement;
-
-      // console.log(`replacing \n${outputRequest.http}with\n${replacement}`);
     }
 
     return outputRequest;
