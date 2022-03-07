@@ -20,7 +20,7 @@ export function parse(input: RestFile): RestFile {
         const matches = env_rx.exec(value);
 
         if (matches?.length > 1) {
-          outputRequest.headers[key] = process.env[matches[1]];
+          outputRequest.headers[key] = env[matches[1]];
         }
       });
     }
@@ -32,7 +32,7 @@ export function parse(input: RestFile): RestFile {
       realMatches.forEach((realMatch) => {
         outputRequest.http = outputRequest.http.replace(
           `{{$ env ${realMatch}}}`,
-          process.env[realMatch]
+          env[realMatch]
         );
       });
     }
