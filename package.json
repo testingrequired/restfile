@@ -8,6 +8,8 @@
   "type": "module",
   "scripts": {
     "tsup": "tsup",
+    "start": "node dist/index.cjs",
+    "dev": "npm run build -- --watch --onSuccess \"npm run start\"",
     "build": "tsup src/index.ts --dts --sourcemap --format esm,cjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
