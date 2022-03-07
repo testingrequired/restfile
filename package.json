@@ -5,13 +5,12 @@
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "type": "module",
   "scripts": {
     "tsup": "tsup",
-    "start": "node dist/index.cjs",
+    "start": "node dist/index.js",
     "dev": "npm run build -- --watch --onSuccess \"npm run start\"",
     "build": "tsup src/index.ts --dts --sourcemap --format esm,cjs",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
@@ -21,6 +20,7 @@
     "expect": "^27.5.1",
     "jest": "^27.5.1",
     "ts-jest": "^27.1.3",
+    "ts-node": "^10.7.0",
     "tsup": "^5.11.13",
     "typescript": "^4.6.2"
   },

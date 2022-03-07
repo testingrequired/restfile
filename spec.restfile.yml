@@ -30,7 +30,7 @@ headers:
   host: "{{$ env BASE_URL}}"
   accept: application/json
 http: |
-  GET /posts/{{? post-id}} HTTP/1.1
+  GET /posts/{{? post-id 1}} HTTP/1.1
 ---
 name: Patch Post
 description: Get blog post by id
@@ -40,11 +40,11 @@ headers:
   host: "{{$ env BASE_URL}}"
   content-type: application/json
 http: |
-  PATCH /posts/{{? post-id}} HTTP/1.1
+  PATCH /posts/{{? post-id 1}} HTTP/1.1
 ---
 name: Delete Post
 description: Delete a blog post
 headers:
   host: "{{$ env BASE_URL}}"
 http: |
-  DELETE /posts/{{? post-id}} HTTP/1.1
+  DELETE /posts/{{? post-id 1}} HTTP/1.1
