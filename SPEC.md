@@ -26,32 +26,10 @@ description: >
   A simple collection of requests with some environment variables and prompts.
 
   This is a good demonstration of some basic functionality restfiles are aiming for.
-```
-
-### name
-
-The name of the collection to display.
-
-### description
-
-Some information about the collection.
-
-## Document 1: Data
-
-```yaml
+---
 env:
   - BASE_URL
-```
-
-### env
-
-A list of environment variables expected to be present. This list makes those values avaliable in the requests.
-
-## Documents 2..n: Requests
-
-Each request is defined in it's on YAML document.
-
-```yaml
+---
 name: Get Posts
 description: Get all posts from the blog
 http: |
@@ -75,7 +53,7 @@ headers:
   host: "{{$ env BASE_URL}}"
   accept: application/json
 http: |
-  GET /posts/{{? post-id}} HTTP/1.1
+  GET /posts/{{? post-id 1}} HTTP/1.1
 ---
 name: Patch Post
 description: Get blog post by id
@@ -85,14 +63,12 @@ headers:
   host: "{{$ env BASE_URL}}"
   content-type: application/json
 http: |
-  PATCH /posts/{{? post-id}} HTTP/1.1
+  PATCH /posts/{{? post-id 1}} HTTP/1.1
 ---
 name: Delete Post
 description: Delete a blog post
 headers:
   host: "{{$ env BASE_URL}}"
-http: |
-  DELETE /posts/{{? post-id}} HTTP/1.1
 ```
 
 ### name
@@ -108,7 +84,3 @@ Some information about the request.
 A raw HTTP message string that must include the start line e.g. `GET http://example.com HTTP/1.1`.
 
 It's important that newlines are preserved so the use of [`|`](https://yaml.org/spec/1.2.2/#23-scalars) is recommended.
-
-### body/headers
-
-The `body` and `headers` properties allow you to define those in YAML and they will be merged with the `http` property above.
