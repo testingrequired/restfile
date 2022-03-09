@@ -11,7 +11,7 @@ userAgent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Fire
 prod:
   baseUrl: http://example.com
 ---
-name: Get Posts
+id: posts/getPosts
 description: Get all posts from the blog
 http: |
   GET /posts HTTP/1.1
@@ -19,7 +19,7 @@ http: |
   Accept: application/json
   user-agent: {{$ userAgent}}
 ---
-name: Add Post
+id: posts/addPost
 description: Add post to blog
 http: |
   POST /posts HTTP/1.1
@@ -29,7 +29,7 @@ http: |
 
   {"date":"2020-01-02 11:00:46 +06:00","text":"Hello World"}
 ---
-name: Get Post
+id: posts/getPostById
 description: Get blog post by id
 http: |
   GET /posts/{{? post-id 1}} HTTP/1.1
@@ -37,7 +37,7 @@ http: |
   accept: application/json
   user-agent: {{$ userAgent}}
 ---
-name: Patch Post
+id: posts/patchPostById
 description: Get blog post by id
 http: |
   PATCH /posts/{{? post-id 1}} HTTP/1.1
@@ -47,7 +47,7 @@ http: |
 
   {"text":"Hello World!"}
 ---
-name: Delete Post
+id: posts/deletePostById
 description: Delete a blog post
 http: |
   DELETE /posts/{{? post-id 1}} HTTP/1.1

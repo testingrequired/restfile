@@ -6,7 +6,8 @@ export interface Collection {
 export type Data = Record<string, unknown>;
 
 export interface Request {
-  name: string;
+  // A unique identifier for this request
+  id: string;
   description?: string;
   http: string;
 }
