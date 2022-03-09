@@ -1,18 +1,21 @@
-import { RestFile, Request } from "./types";
+import { RestFile, Request, Data } from "./types";
 
-export function parse(input: RestFile): RestFile {
-  const [inputCollection, inputData, ...inputRequests] = input;
-
-  const env_rx = /\{\{\$ env (.*)\}\}/;
-  const prompt_rx = /\{\{\? (.+) (.+)\}\}/;
-
+function parseEnvData(data: Data): Record<string, string> {
   const env = {};
 
-  inputData.env?.forEach((e) => {
+  data.env?.forEach((e) => {
     env[e] = process.env[e];
   });
 
-  const outputRequests = inputRequests.map((inputRequest) => {
+  return env;
+}
+
+const mapEnvInRequest =
+  (env: Record<string, string>) =>
+  (inputRequest: Request): Request => {
+    const env_rx = /\{\{\$ env (.*)\}\}/;
+    const prompt_rx = /\{\{\? (.+) (.+)\}\}/;
+
     const outputRequest = { ...inputRequest };
 
     if (outputRequest.headers) {
@@ -47,7 +50,14 @@ export function parse(input: RestFile): RestFile {
     }
 
     return outputRequest;
-  });
+  };
+
+export function parse(input: RestFile): RestFile {
+  const [inputCollection, inputData, ...inputRequests] = input;
+
+  const env = parseEnvData(inputData);
+
+  const outputRequests = inputRequests.map(mapEnvInRequest(env));
 
   const output: RestFile = [inputCollection, inputData, ...outputRequests];
 
