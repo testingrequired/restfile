@@ -3,10 +3,13 @@ description: >
   A simple collection of requests with some environment variables and prompts.
 
   This is a good demonstration of some basic functionality restfiles are aiming for.
-envs: [local, prod]
+envs: [prod]
 ---
-env:
-  - BASE_URL
+baseUrl: http://localhost
+userAgent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+
+prod:
+  baseUrl: http://example.com
 ---
 name: Get Posts
 description: Get all posts from the blog
@@ -14,6 +17,7 @@ http: |
   GET /posts HTTP/1.1
   Host: http://example.com
   Accept: application/json
+  user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
 ---
 name: Add Post
 description: Add post to blog
@@ -21,6 +25,7 @@ http: |
   POST /posts HTTP/1.1
   host: http://example.com
   content-type: application/json
+  user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
 
   {"date":"2020-01-02 11:00:46 +06:00","text":"Hello World"}
 ---
@@ -30,6 +35,7 @@ http: |
   GET /posts/1 HTTP/1.1
   host: http://example.com
   accept: application/json
+  user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
 ---
 name: Patch Post
 description: Get blog post by id
@@ -37,6 +43,7 @@ http: |
   PATCH /posts/1 HTTP/1.1
   host: http://example.com
   content-type: application/json
+  user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
 
   {"text":"Hello World!"}
 ---
@@ -45,3 +52,4 @@ description: Delete a blog post
 http: |
   DELETE /posts/1 HTTP/1.1
   host: http://example.com
+  user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0

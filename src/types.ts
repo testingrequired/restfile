@@ -3,16 +3,12 @@ export interface Collection {
   description?: string;
 }
 
-export interface Data {
-  env?: string[];
-}
+export type Data = Record<string, unknown>;
 
 export interface Request {
   name: string;
   description?: string;
   http: string;
-  headers?: Record<string, string>;
-  body?: object | string;
 }
 
 export type Document = Collection | Data | Request;

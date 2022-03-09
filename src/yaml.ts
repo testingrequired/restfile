@@ -1,5 +1,5 @@
 import { loadAll } from "js-yaml";
-import { Collection, Data, Request, RestFile } from "./types";
+import { Collection, Data, Document, Request, RestFile } from "./types";
 
 export function asyncLoadAll(content: string) {
   return new Promise<RestFile>((resolve, reject) => {
