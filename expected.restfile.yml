@@ -3,6 +3,7 @@ description: >
   A simple collection of requests with some environment variables and prompts.
 
   This is a good demonstration of some basic functionality restfiles are aiming for.
+envs: [local, prod]
 ---
 env:
   - BASE_URL
