@@ -9,6 +9,7 @@ export interface Request {
   // A unique identifier for this request
   id: string;
   description?: string;
+  headers?: Record<string, string>;
   http: string;
 }
 

@@ -5,20 +5,20 @@ import expect from "expect";
 import { parse } from "./parse";
 
 describe("test", () => {
+  const specFile = "spec.restfile.yml";
+  const expectedFile = "expected.restfile.yml";
+
   it("test", async () => {
     const spec = await asyncLoadAll(
-      await fs.readFile(path.join(process.cwd(), "spec.restfile.yml"), "utf-8")
+      await fs.readFile(path.join(process.cwd(), specFile), "utf-8")
     );
 
     const expected = await asyncLoadAll(
-      await fs.readFile(
-        path.join(process.cwd(), "expected.restfile.yml"),
-        "utf-8"
-      )
+      await fs.readFile(path.join(process.cwd(), expectedFile), "utf-8")
     );
 
-    process.env.BASE_URL = "http://example.com";
+    const actual = parse(spec);
 
-    expect(parse(spec)).toEqual(expected);
+    expect(actual).toEqual(expected);
   });
 });

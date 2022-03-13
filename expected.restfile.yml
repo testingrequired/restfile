@@ -13,11 +13,14 @@ prod:
 ---
 id: posts/getPosts
 description: Get all posts from the blog
-http: |
+headers:
+  user-agent: "{{$ userAgent}}"
+http: |+
   GET /posts HTTP/1.1
   Host: http://example.com
   Accept: application/json
-  user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+  User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+
 ---
 id: posts/addPost
 description: Add post to blog
@@ -31,11 +34,12 @@ http: |
 ---
 id: posts/getPostById
 description: Get blog post by id
-http: |
+http: |+
   GET /posts/1 HTTP/1.1
   host: http://example.com
   accept: application/json
   user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+
 ---
 id: posts/patchPostById
 description: Get blog post by id
@@ -49,7 +53,7 @@ http: |
 ---
 id: posts/deletePostById
 description: Delete a blog post
-http: |
+http: |+
   DELETE /posts/1 HTTP/1.1
   host: http://example.com
   user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0

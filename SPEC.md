@@ -20,6 +20,7 @@ The use of `{{? "Post Id"}}` indicates prompting the user for this information. 
 
 Information about the collection as a whole.
 
+<!-- prettier-ignore -->
 ```yaml
 name: Example Collection
 description: >
@@ -36,15 +37,17 @@ prod:
 ---
 id: posts/getPosts
 description: Get all posts from the blog
-http: |
+headers:
+  user-agent: "{{$ userAgent}}"
+http: |+
   GET /posts HTTP/1.1
   Host: {{$ baseUrl}}
   Accept: application/json
-  user-agent: {{$ userAgent}}
+
 ---
 id: posts/addPost
 description: Add post to blog
-http: |
+http: |+
   POST /posts HTTP/1.1
   host: {{$ baseUrl}}
   content-type: application/json
@@ -54,15 +57,16 @@ http: |
 ---
 id: posts/getPostById
 description: Get blog post by id
-http: |
+http: |+
   GET /posts/{{? post-id 1}} HTTP/1.1
   host: {{$ baseUrl}}
   accept: application/json
   user-agent: {{$ userAgent}}
+
 ---
 id: posts/patchPostById
 description: Get blog post by id
-http: |
+http: |+
   PATCH /posts/{{? post-id 1}} HTTP/1.1
   host: {{$ baseUrl}}
   content-type: application/json
@@ -72,10 +76,11 @@ http: |
 ---
 id: posts/deletePostById
 description: Delete a blog post
-http: |
+http: |+
   DELETE /posts/{{? post-id 1}} HTTP/1.1
   host: {{$ baseUrl}}
   user-agent: {{$ userAgent}}
+
 ```
 
 ### name
