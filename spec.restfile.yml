@@ -64,6 +64,7 @@ http: |+
   host: {{$ baseUrl}}
   user-agent: {{$ userAgent}}
   Authorization: Bearer {{! secretToken}}
+
 ---
 id: user/status
 description: Update user status

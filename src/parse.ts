@@ -119,6 +119,10 @@ const mapEnvInRequest =
         .join(httpMatches[2]);
     }
 
+    // Run all requests through http parser to standardize
+    const http = httpz.parse(outputRequest.http.split("\n").join("\r\n"));
+    outputRequest.http = httpz.build(http).split("\r\n").join("\n");
+
     return outputRequest;
   };
 
