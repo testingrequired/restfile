@@ -3,6 +3,7 @@ import * as path from "path";
 import { asyncLoadAll } from "./yaml";
 import expect from "expect";
 import { parse } from "./parse";
+import { validate } from "./validate";
 
 describe("test", () => {
   const specFile = "spec.restfile.yml";
@@ -19,6 +20,10 @@ describe("test", () => {
     const expected = await asyncLoadAll(
       await fs.readFile(path.join(process.cwd(), expectedFile), "utf-8")
     );
+
+    const errors = validate(spec);
+
+    expect(errors.length).toBe(0);
 
     const actual = parse(spec, secrets);
 
