@@ -56,9 +56,8 @@ export function parseSecrets(
 
     if (secretsKeys.includes(strippedKey)) {
       value = secrets[strippedKey];
+      secretData[strippedKey] = value;
     }
-
-    secretData[strippedKey] = value;
   });
 
   return secretData;
