@@ -1,6 +1,10 @@
 import { RestFile, Request } from "./types";
 import httpz from "http-z";
 
+export const env_rx = /\{\{\$ (.*)\}\}/g;
+export const secret_rx = /\{\{\! (.*)\}\}/g;
+export const prompt_rx = /\{\{\? (.+) (.+)\}\}/;
+
 /**
  *
  * @param {RestFile} restfile Target RestFile to parse data from
@@ -66,10 +70,6 @@ export function parseSecrets(
 const mapTemplateValuesInRequest =
   (env: Record<string, string>, secretData: Record<string, any>) =>
   (inputRequest: Request): Request => {
-    const env_rx = /\{\{\$ (.*)\}\}/g;
-    const secret_rx = /\{\{\! (.*)\}\}/g;
-    const prompt_rx = /\{\{\? (.+) (.+)\}\}/;
-
     const outputRequest = { ...inputRequest };
 
     // Add headers from the request to http

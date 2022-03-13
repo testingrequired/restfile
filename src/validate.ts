@@ -1,10 +1,12 @@
+import { env_rx, parseData } from "./parse";
 import { RestFile } from "./types";
 
-export function validate(restfile: RestFile): ValidationError[] {
+export function validate(restfile: RestFile, env: string): ValidationError[] {
   const errors: ValidationError[] = [];
 
   errors.push(...validateHasRequests(restfile));
   errors.push(...validateUniqueRequestIds(restfile));
+  errors.push(...validateAllRequestTemplateReferences(restfile, env));
 
   return errors;
 }
@@ -23,7 +25,7 @@ function validateHasRequests(restfile: RestFile): ValidationError[] {
   return errors;
 }
 
-function validateUniqueRequestIds(restfile: RestFile) {
+function validateUniqueRequestIds(restfile: RestFile): ValidationError[] {
   const [_, __, ...requests] = restfile;
   const errors: ValidationError[] = [];
 
@@ -43,6 +45,55 @@ function validateUniqueRequestIds(restfile: RestFile) {
       message: `Duplicate request id: ${duplicate}`,
     });
   });
+
+  return errors;
+}
+
+function validateAllRequestTemplateReferences(
+  restfile: RestFile,
+  env: string
+): ValidationError[] {
+  const [_, __, ...requests] = restfile;
+  const errors: ValidationError[] = [];
+
+  const data = parseData(restfile, env);
+  const dataKeys = Object.keys(data);
+
+  for (const request of requests) {
+    for (const match of request.http.matchAll(env_rx)) {
+      if (dataKeys.includes(match[1])) continue;
+
+      errors.push({
+        key: `requests.${request.id}.http`,
+        message: `Reference to undefined variable: ${match[0]}`,
+      });
+    }
+
+    if (request.headers) {
+      for (const [key, value] of Object.entries(request.headers)) {
+        for (const match of value.matchAll(env_rx)) {
+          if (dataKeys.includes(match[1])) continue;
+
+          errors.push({
+            key: `requests.${request.id}.headers.${key}`,
+            message: `Reference to undefined variable: ${match[0]}`,
+          });
+        }
+      }
+    }
+
+    if (request.body) {
+      // TODO: toString is a cheat here
+      for (const match of request.body.toString().matchAll(env_rx)) {
+        if (dataKeys.includes(match[1])) continue;
+
+        errors.push({
+          key: `requests.${request.id}.body`,
+          message: `Reference to undefined variable: ${match[0]}`,
+        });
+      }
+    }
+  }
 
   return errors;
 }
