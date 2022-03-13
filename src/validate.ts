@@ -7,6 +7,7 @@ export function validate(restfile: RestFile, env: string): ValidationError[] {
   errors.push(...validateHasRequests(restfile));
   errors.push(...validateUniqueRequestIds(restfile));
   errors.push(...validateAllRequestTemplateReferences(restfile, env));
+  errors.push(...validateNoSecretsInEnvData(restfile));
 
   return errors;
 }
@@ -90,6 +91,28 @@ function validateAllRequestTemplateReferences(
         errors.push({
           key: `requests.${request.id}.body`,
           message: `Reference to undefined variable: ${match[0]}`,
+        });
+      }
+    }
+  }
+
+  return errors;
+}
+
+function validateNoSecretsInEnvData(restfile: RestFile): ValidationError[] {
+  const [collection, data] = restfile;
+  const errors: ValidationError[] = [];
+
+  if (collection.envs) {
+    for (const env of collection.envs) {
+      const secretKeys = Object.keys(data[env]).filter((key) =>
+        key.endsWith("!")
+      );
+
+      for (const secretKey of secretKeys) {
+        errors.push({
+          key: `data.${env}.${secretKey}`,
+          message: "Secrets can not be defined in env data",
         });
       }
     }

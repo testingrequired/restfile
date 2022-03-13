@@ -7,7 +7,7 @@ describe("validate", () => {
   beforeEach(() => {
     restfile = [
       { name: "Test", envs: ["prod"] },
-      {},
+      { ["prod"]: {} },
       { id: "testRequest", http: "" },
     ];
   });
@@ -67,6 +67,31 @@ describe("validate", () => {
         key: "requests.invalidRequest.body",
         message:
           "Reference to undefined variable: {{$ lastOneDoesntExist}} {{$ reallyLastOne}}",
+      },
+    ]);
+  });
+
+  it("should validate no secrets in env specific data", () => {
+    const [collection, data] = restfile;
+
+    collection.envs.push("testEnv");
+
+    data.testEnv = {
+      "testSecret!": "",
+    };
+
+    data["secretValue!"] = "";
+
+    data.prod["invalidSecretValue!"] = "";
+
+    expect(validate(restfile, "prod")).toEqual([
+      {
+        key: "data.prod.invalidSecretValue!",
+        message: "Secrets can not be defined in env data",
+      },
+      {
+        key: "data.testEnv.testSecret!",
+        message: "Secrets can not be defined in env data",
       },
     ]);
   });
