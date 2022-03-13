@@ -10,18 +10,17 @@ Templating is used to ensure the restfile is generic.
 
 ### Variables
 
-Variables can be accessed using `{{$ scope variable}}` e.g. `{{$ env BASE_URL}}`.
+Variables are defined in the data document can be accessed using `{{$ variable}}` e.g. `{{$ baseUrl}}`.
 
-### Prompts
+### Secrets
 
-The use of `{{? "Post Id"}}` indicates prompting the user for this information. This defaults to a string.
+Secrets are defined (without a value) in the data document as well and can be accessed using `{{! variable}}` e.g. `{{! baseUrl}}`. These will be provided at runtime by the client implementation.
 
-## Document 0: Collection Information
-
-Information about the collection as a whole.
+## Example
 
 <!-- prettier-ignore -->
 ```yaml
+# Document 0: Collection
 name: Example Collection
 description: >
   A simple collection of requests with some environment variables and prompts.
@@ -29,6 +28,7 @@ description: >
   This is a good demonstration of some basic functionality restfiles are aiming for.
 envs: [prod]
 ---
+# Document 1: Data
 baseUrl: http://localhost
 userAgent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
 secretToken!: !!str
@@ -36,6 +36,7 @@ secretToken!: !!str
 prod:
   baseUrl: http://example.com
 ---
+# Documents 2..n: Requests
 id: posts/getPosts
 description: Get all posts from the blog
 headers:
@@ -102,6 +103,18 @@ http: |+
 
 ```
 
+## Document 0: Collection Information
+
+Information about the collection as a whole.
+
+## Document 1: Data
+
+Templating variables and secrets are defined here.
+
+## Documents 2..n: Requests
+
+The remaining documents are requests in the collection.
+
 ### name
 
 The name of the request.
@@ -114,4 +127,8 @@ Some information about the request.
 
 A raw HTTP message string that must include the start line e.g. `GET http://example.com HTTP/1.1`.
 
-It's important that newlines are preserved so the use of [`|`](https://yaml.org/spec/1.2.2/#23-scalars) is recommended.
+It's important that newlines are preserved so the use of [`|+`](https://yaml.org/spec/1.2.2/#23-scalars) is recommended.
+
+### headers/body
+
+Both `request.headers` and `request.body` allow you to define override how `request.http` is generated. The `request.headers` are merged with the existing ones in `request.http` but `request.body` overwrites the body.
