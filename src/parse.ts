@@ -35,6 +35,39 @@ const mapEnvInRequest =
       });
 
       outputRequest.http = httpz.build(http).split("\r\n").join("\n");
+
+      if (outputRequest.id === "posts/patchPostById") {
+        console.log(JSON.stringify(outputRequest.http));
+      }
+    }
+
+    if (outputRequest.body) {
+      try {
+        const http = httpz.parse(outputRequest.http.split("\n").join("\r\n"));
+
+        if (!http.body) {
+          http.body = {
+            text: "",
+            contentType: "application/json",
+            boundary: "",
+            params: [],
+          };
+        }
+
+        if (typeof outputRequest.body === "string") {
+          http.body.text = outputRequest.body;
+        } else {
+          http.body.text = JSON.stringify(outputRequest.body);
+        }
+
+        outputRequest.http = httpz.build(http).split("\r\n").join("\n") + "\n";
+      } catch (e) {
+        console.log(
+          outputRequest.id,
+          JSON.stringify(outputRequest.http.split("\n").join("\r\n"))
+        );
+        throw e;
+      }
     }
 
     // Replace template variables in request.http

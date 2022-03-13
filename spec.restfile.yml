@@ -42,17 +42,29 @@ http: |+
 ---
 id: posts/patchPostById
 description: Get blog post by id
+body:
+  text: Hello World!!
 http: |+
-  PATCH /posts/{{? post-id 1}} HTTP/1.1
+  PATCH /posts/1 HTTP/1.1
   host: {{$ baseUrl}}
   content-type: application/json
   user-agent: {{$ userAgent}}
 
-  {"text":"Hello World!"}
+  {"text": "Hello World!"}
 ---
 id: posts/deletePostById
 description: Delete a blog post
 http: |+
-  DELETE /posts/{{? post-id 1}} HTTP/1.1
+  DELETE /posts/1 HTTP/1.1
   host: {{$ baseUrl}}
   user-agent: {{$ userAgent}}
+---
+id: user/status
+description: Update user status
+body: online
+http: |+
+  PATCH /user/status HTTP/1.1
+  host: {{$ baseUrl}}
+  content-type: text/plain
+  user-agent: {{$ userAgent}}
+

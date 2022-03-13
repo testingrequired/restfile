@@ -10,6 +10,7 @@ export interface Request {
   id: string;
   description?: string;
   headers?: Record<string, string>;
+  body?: Record<string, any> | string;
   http: string;
 }
 
