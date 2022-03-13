@@ -5,11 +5,7 @@ describe("validate", () => {
   let restfile: RestFile;
 
   beforeEach(() => {
-    restfile = [
-      { name: "Test", envs: ["prod"] },
-      { ["prod"]: {} },
-      { id: "testRequest", http: "" },
-    ];
+    restfile = validRestFile(["prod"]);
   });
 
   it("should validate having no requests defined", () => {
@@ -96,3 +92,14 @@ describe("validate", () => {
     ]);
   });
 });
+
+export function validRestFile(envs: string[]): RestFile {
+  const collection = { name: "Test", envs };
+  const data = {};
+  for (const env of envs) {
+    data[env] = {};
+  }
+  const request = { id: "testRequest", http: "" };
+
+  return [collection, data, request];
+}

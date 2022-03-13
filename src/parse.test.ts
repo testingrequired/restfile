@@ -1,11 +1,12 @@
 import { parseData, parseSecrets } from "./parse";
 import { RestFile } from "./types";
+import { validRestFile } from "./validate.test";
 
 describe("parseData", () => {
   let restfile: RestFile;
 
   beforeEach(() => {
-    restfile = [{ name: "Test", envs: ["prod"] }, {}];
+    restfile = validRestFile(["prod"]);
   });
 
   it("should return object of resolved data from data document in restfile", () => {
