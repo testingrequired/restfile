@@ -1,6 +1,7 @@
 export interface Collection {
   name: string;
   description?: string;
+  envs?: string[];
 }
 
 export type Data = Record<string, unknown>;

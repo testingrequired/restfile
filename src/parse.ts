@@ -1,7 +1,18 @@
-import { RestFile, Request, Data } from "./types";
+import { RestFile, Request } from "./types";
 import httpz from "http-z";
 
-function parseData(data: Data, env: string): Record<string, string> {
+/**
+ *
+ * @param {RestFile} restfile Target RestFile to parse data from
+ * @param {string} env Name of environment
+ * @returns Object with parsed data
+ */
+export function parseData(
+  restfile: RestFile,
+  env: string
+): Record<string, string> {
+  const [collection, data, __] = restfile;
+
   const envData = {};
 
   Object.entries(data).forEach(([key, value]) => {
@@ -17,13 +28,25 @@ function parseData(data: Data, env: string): Record<string, string> {
     }
   });
 
+  collection.envs.forEach((env) => {
+    delete envData[env];
+  });
+
   return envData;
 }
 
-function parseSecrets(
-  data: Data,
+/**
+ *
+ * @param {RestFile} restfile Target RestFile to parse secrets from
+ * @param {Record<string, any>} secrets Object with secret values to map from
+ * @returns Object with parsed secrets
+ */
+export function parseSecrets(
+  restfile: RestFile,
   secrets: Record<string, any>
 ): Record<string, string> {
+  const [_, data, __] = restfile;
+
   const secretData = {};
 
   const secretsKeys = Object.keys(secrets);
@@ -41,7 +64,7 @@ function parseSecrets(
   return secretData;
 }
 
-const mapEnvInRequest =
+const mapTemplateValuesInRequest =
   (env: Record<string, string>, secretData: Record<string, any>) =>
   (inputRequest: Request): Request => {
     const env_rx = /\{\{\$ (.*)\}\}/g;
@@ -129,11 +152,11 @@ const mapEnvInRequest =
 export function parse(input: RestFile, secrets: Record<string, any>): RestFile {
   const [inputCollection, inputData, ...inputRequests] = input;
 
-  const envData = parseData(inputData, "prod");
-  const secretData = parseSecrets(inputData, secrets);
+  const envData = parseData(input, "prod");
+  const secretData = parseSecrets(input, secrets);
 
   const outputRequests = inputRequests.map(
-    mapEnvInRequest(envData, secretData)
+    mapTemplateValuesInRequest(envData, secretData)
   );
 
   const output: RestFile = [inputCollection, inputData, ...outputRequests];
