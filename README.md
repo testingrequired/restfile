@@ -19,6 +19,7 @@ envs: [prod]
 ---
 baseUrl: http://localhost
 userAgent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+secretToken!: !!str
 
 prod:
   baseUrl: http://example.com
@@ -31,6 +32,7 @@ http: |+
   GET /posts HTTP/1.1
   Host: {{$ baseUrl}}
   Accept: application/json
+  Authorization: Bearer {{! secretToken}}
 
 ---
 id: posts/addPost
@@ -40,6 +42,7 @@ http: |+
   host: {{$ baseUrl}}
   content-type: application/json
   user-agent: {{$ userAgent}}
+  Authorization: Bearer {{! secretToken}}
 
   {"date":"2020-01-02 11:00:46 +06:00","text":"Hello World"}
 ---
@@ -50,6 +53,7 @@ http: |+
   host: {{$ baseUrl}}
   accept: application/json
   user-agent: {{$ userAgent}}
+  Authorization: Bearer {{! secretToken}}
 
 ---
 id: posts/patchPostById
@@ -61,6 +65,7 @@ http: |+
   host: {{$ baseUrl}}
   content-type: application/json
   user-agent: {{$ userAgent}}
+  Authorization: Bearer {{! secretToken}}
 
   {"text": "Hello World!"}
 ---
@@ -70,6 +75,7 @@ http: |+
   DELETE /posts/1 HTTP/1.1
   host: {{$ baseUrl}}
   user-agent: {{$ userAgent}}
+  Authorization: Bearer {{! secretToken}}
 ---
 id: user/status
 description: Update user status
@@ -79,6 +85,7 @@ http: |+
   host: {{$ baseUrl}}
   content-type: text/plain
   user-agent: {{$ userAgent}}
+  Authorization: Bearer {{! secretToken}}
 
 
 ```
@@ -96,6 +103,7 @@ envs: [prod]
 ---
 baseUrl: http://localhost
 userAgent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+secretToken!: !!str
 
 prod:
   baseUrl: http://example.com
@@ -108,6 +116,7 @@ http: |+
   GET /posts HTTP/1.1
   Host: http://example.com
   Accept: application/json
+  Authorization: Bearer expectedToken
   User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
 
 ---
@@ -118,6 +127,7 @@ http: |
   host: http://example.com
   content-type: application/json
   user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+  Authorization: Bearer expectedToken
 
   {"date":"2020-01-02 11:00:46 +06:00","text":"Hello World"}
 ---
@@ -128,6 +138,7 @@ http: |+
   host: http://example.com
   accept: application/json
   user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+  Authorization: Bearer expectedToken
 
 ---
 id: posts/patchPostById
@@ -139,6 +150,7 @@ http: |+
   Host: http://example.com
   Content-Type: application/json
   User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+  Authorization: Bearer expectedToken
 
   {"text":"Hello World!!"}
 ---
@@ -148,6 +160,7 @@ http: |+
   DELETE /posts/1 HTTP/1.1
   host: http://example.com
   user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+  Authorization: Bearer expectedToken
 ---
 id: user/status
 description: Update user status
@@ -157,6 +170,7 @@ http: |+
   Host: http://example.com
   Content-Type: text/plain
   User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+  Authorization: Bearer expectedToken
 
   online
 

@@ -7,6 +7,9 @@ import { parse } from "./parse";
 describe("test", () => {
   const specFile = "spec.restfile.yml";
   const expectedFile = "expected.restfile.yml";
+  const secrets = {
+    secretToken: "expectedToken",
+  };
 
   it("test", async () => {
     const spec = await asyncLoadAll(
@@ -17,7 +20,7 @@ describe("test", () => {
       await fs.readFile(path.join(process.cwd(), expectedFile), "utf-8")
     );
 
-    const actual = parse(spec);
+    const actual = parse(spec, secrets);
 
     expect(actual).toEqual(expected);
   });
