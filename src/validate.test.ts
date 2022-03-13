@@ -4,15 +4,17 @@ import { validate } from "./validate";
 describe("validate", () => {
   let restfile: RestFile;
 
-  beforeEach(() => {});
+  beforeEach(() => {
+    restfile = [
+      { name: "Test", envs: ["prod"] },
+      {},
+      { id: "testRequest", http: "" },
+    ];
+  });
 
   it("should validate having no requests defined", () => {
-    restfile = [
-      {
-        name: "Test Collection",
-      },
-      {},
-    ];
+    // Remove any defined requests
+    restfile = restfile.slice(0, 2) as RestFile;
 
     expect(validate(restfile)).toEqual([
       {
@@ -23,16 +25,12 @@ describe("validate", () => {
   });
 
   it("should validate no duplicate request ids", () => {
-    restfile = [
-      {
-        name: "Test Collection",
-      },
-      {},
+    restfile.push(
       { id: "1", http: "GET http://example.com/1" },
       { id: "1", http: "GET http://example.com/2" },
       { id: "3", http: "GET http://example.com/3" },
-      { id: "3", http: "GET http://example.com/4" },
-    ];
+      { id: "3", http: "GET http://example.com/4" }
+    );
 
     expect(validate(restfile)).toEqual([
       {
