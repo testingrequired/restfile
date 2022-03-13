@@ -54,20 +54,32 @@ http: |+
 ---
 id: posts/patchPostById
 description: Get blog post by id
+body:
+  text: Hello World!!
 http: |+
-  PATCH /posts/{{? post-id 1}} HTTP/1.1
+  PATCH /posts/1 HTTP/1.1
   host: {{$ baseUrl}}
   content-type: application/json
   user-agent: {{$ userAgent}}
 
-  {"text":"Hello World!"}
+  {"text": "Hello World!"}
 ---
 id: posts/deletePostById
 description: Delete a blog post
 http: |+
-  DELETE /posts/{{? post-id 1}} HTTP/1.1
+  DELETE /posts/1 HTTP/1.1
   host: {{$ baseUrl}}
   user-agent: {{$ userAgent}}
+---
+id: user/status
+description: Update user status
+body: online
+http: |+
+  PATCH /user/status HTTP/1.1
+  host: {{$ baseUrl}}
+  content-type: text/plain
+  user-agent: {{$ userAgent}}
+
 
 ```
 
@@ -120,13 +132,15 @@ http: |+
 ---
 id: posts/patchPostById
 description: Get blog post by id
-http: |
+body:
+  text: Hello World!!
+http: |+
   PATCH /posts/1 HTTP/1.1
-  host: http://example.com
-  content-type: application/json
-  user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+  Host: http://example.com
+  Content-Type: application/json
+  User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
 
-  {"text":"Hello World!"}
+  {"text":"Hello World!!"}
 ---
 id: posts/deletePostById
 description: Delete a blog post
@@ -134,5 +148,16 @@ http: |+
   DELETE /posts/1 HTTP/1.1
   host: http://example.com
   user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+---
+id: user/status
+description: Update user status
+body: online
+http: |+
+  PATCH /user/status HTTP/1.1
+  Host: http://example.com
+  Content-Type: text/plain
+  User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+
+  online
 
 ```
