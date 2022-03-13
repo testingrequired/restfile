@@ -8,6 +8,12 @@ describe("validate", () => {
     restfile = validRestFile(["prod"]);
   });
 
+  describe("validRestFile", () => {
+    it("should pass validation", () => {
+      expect(validate(validRestFile(["prod"]), "prod")).toEqual([]);
+    });
+  });
+
   it("should validate having no requests defined", () => {
     // Remove any defined requests
     restfile = restfile.slice(0, 2) as RestFile;
