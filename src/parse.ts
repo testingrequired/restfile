@@ -1,5 +1,5 @@
 import { RestFile, Request } from "./types";
-import httpz from "http-z";
+import httpz, { HttpZRequestModel } from "http-z";
 
 export const varGlyph = "$";
 export const secretGlyph = "!";
@@ -86,7 +86,7 @@ const mapTemplateValuesInRequest =
 
     // Add headers from the request to http
     if (outputRequest.headers) {
-      const http = httpz.parse(outputRequest.http.split("\n").join("\r\n"));
+      const http = parseHttp(outputRequest.http);
 
       Object.entries(outputRequest.headers).forEach(([key, value]) => {
         http.headers.push({
@@ -95,7 +95,7 @@ const mapTemplateValuesInRequest =
         });
       });
 
-      outputRequest.http = httpz.build(http).split("\r\n").join("\n");
+      outputRequest.http = buildHttp(http);
 
       if (outputRequest.id === "posts/patchPostById") {
         console.log(JSON.stringify(outputRequest.http));
@@ -103,32 +103,24 @@ const mapTemplateValuesInRequest =
     }
 
     if (outputRequest.body) {
-      try {
-        const http = httpz.parse(outputRequest.http.split("\n").join("\r\n"));
+      const http = parseHttp(outputRequest.http);
 
-        if (!http.body) {
-          http.body = {
-            text: "",
-            contentType: "application/json",
-            boundary: "",
-            params: [],
-          };
-        }
-
-        if (typeof outputRequest.body === "string") {
-          http.body.text = outputRequest.body;
-        } else {
-          http.body.text = JSON.stringify(outputRequest.body);
-        }
-
-        outputRequest.http = httpz.build(http).split("\r\n").join("\n") + "\n";
-      } catch (e) {
-        console.log(
-          outputRequest.id,
-          JSON.stringify(outputRequest.http.split("\n").join("\r\n"))
-        );
-        throw e;
+      if (!http.body) {
+        http.body = {
+          text: "",
+          contentType: "application/json",
+          boundary: "",
+          params: [],
+        };
       }
+
+      if (typeof outputRequest.body === "string") {
+        http.body.text = outputRequest.body;
+      } else {
+        http.body.text = JSON.stringify(outputRequest.body);
+      }
+
+      outputRequest.http = buildHttp(http) + "\n";
     }
 
     // Replace template variables in request.http
@@ -154,15 +146,8 @@ const mapTemplateValuesInRequest =
     }
 
     // Run all requests through http parser to standardize
-    try {
-      const http = httpz.parse(outputRequest.http.split("\n").join("\r\n"));
-      outputRequest.http = httpz.build(http).split("\r\n").join("\n");
-    } catch (e) {
-      console.log(
-        `There was an unexpected error parsing or building requests after templating transformation was completed: ${e.message}\n\n${outputRequest.http}`
-      );
-      throw e;
-    }
+    const http = parseHttp(outputRequest.http);
+    outputRequest.http = buildHttp(http);
 
     return outputRequest;
   };
@@ -180,4 +165,28 @@ export function parse(input: RestFile, secrets: Record<string, any>): RestFile {
   const output: RestFile = [inputCollection, inputData, ...outputRequests];
 
   return output;
+}
+
+function parseHttp(inputHttp: string): HttpZRequestModel {
+  try {
+    return httpz.parse(inputHttp.split("\n").join("\r\n")) as HttpZRequestModel;
+  } catch (e) {
+    console.log(
+      `There was an unexpected error parsing HTTP message: ${e.message}\n\n${inputHttp}`
+    );
+
+    throw e;
+  }
+}
+
+function buildHttp(inputHttp: HttpZRequestModel): string {
+  try {
+    return httpz.build(inputHttp).split("\r\n").join("\n");
+  } catch (e) {
+    console.log(
+      `There was an unexpected error building HTTP message: ${e.message}\n\n${inputHttp}`
+    );
+
+    throw e;
+  }
 }
