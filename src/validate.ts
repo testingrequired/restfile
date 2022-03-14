@@ -130,7 +130,15 @@ function validateAllEnvKeysDefinedInRoot(
         if (!dataKeys.includes(envKey) && !envKey.endsWith("!")) {
           errors.push({
             key: `data.${env}.${envKey}`,
-            message: `Key must be defined in data root if defined in env data. e.g. data.${envKey}: !!str && data.${env}.${envKey}: '${data[env][envKey]}'`,
+            message: [
+              `Key must be defined in data root if defined in env data.`,
+              "",
+              `Try adding this to the data document in the restfile:`,
+              "",
+              `${envKey}: !!str`,
+              `${env}:`,
+              `  ${envKey}: '${data[env][envKey]}'`,
+            ].join("\n"),
           });
         }
       }
