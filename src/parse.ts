@@ -1,9 +1,19 @@
 import { RestFile, Request } from "./types";
 import httpz from "http-z";
 
-export const env_rx = /\{\{\$ (.*)\}\}/g;
-export const secret_rx = /\{\{\! (.*)\}\}/g;
-export const prompt_rx = /\{\{\? (.+) (.+)\}\}/;
+export const varGlyph = "$";
+export const secretGlyph = "!";
+export const promptGlyph = "?";
+
+export const varTemplatePattern = new RegExp(`\{\{\\${varGlyph} (.*)\}\}`, "g");
+export const secretTemplatePattern = new RegExp(
+  `\{\{\\${secretGlyph} (.*)\}\}`,
+  "g"
+);
+export const promptTemplatePattern = new RegExp(
+  `\{\{\\${promptGlyph} (.*)\}\}`,
+  "g"
+);
 
 /**
  *
@@ -21,7 +31,7 @@ export function parseData(
 
   Object.entries(data).forEach(([key, value]) => {
     // Skip Secrets
-    if (key.endsWith("!")) {
+    if (key.endsWith(secretGlyph)) {
       return;
     }
 
@@ -122,30 +132,37 @@ const mapTemplateValuesInRequest =
     }
 
     // Replace template variables in request.http
-    for (const match of outputRequest.http.matchAll(env_rx)) {
+    for (const match of outputRequest.http.matchAll(varTemplatePattern)) {
       outputRequest.http = outputRequest.http
-        .split(`{{$ ${match[1]}}}`)
+        .split(`{{${varGlyph} ${match[1]}}}`)
         .join(env[match[1]]);
     }
 
     // Replace template secrets in request.http
-    for (const match of outputRequest.http.matchAll(secret_rx)) {
+    for (const match of outputRequest.http.matchAll(secretTemplatePattern)) {
       outputRequest.http = outputRequest.http
-        .split(`{{! ${match[1]}}}`)
+        .split(`{{${secretGlyph} ${match[1]}}}`)
         .join(secretData[match[1]]);
     }
 
     // Replace template prompts in request.http
-    const httpMatches = prompt_rx.exec(outputRequest.http);
+    const httpMatches = promptTemplatePattern.exec(outputRequest.http);
     if (httpMatches?.length > 2) {
       outputRequest.http = outputRequest.http
-        .split(`{{? ${httpMatches[1]} ${httpMatches[2]}}}`)
+        .split(`{{${promptGlyph} ${httpMatches[1]} ${httpMatches[2]}}}`)
         .join(httpMatches[2]);
     }
 
     // Run all requests through http parser to standardize
-    const http = httpz.parse(outputRequest.http.split("\n").join("\r\n"));
-    outputRequest.http = httpz.build(http).split("\r\n").join("\n");
+    try {
+      const http = httpz.parse(outputRequest.http.split("\n").join("\r\n"));
+      outputRequest.http = httpz.build(http).split("\r\n").join("\n");
+    } catch (e) {
+      console.log(
+        `There was an unexpected error parsing or building requests after templating transformation was completed: ${e.message}\n\n${outputRequest.http}`
+      );
+      throw e;
+    }
 
     return outputRequest;
   };

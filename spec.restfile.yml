@@ -37,7 +37,7 @@ http: |+
 id: posts/getPostById
 description: Get blog post by id
 http: |+
-  GET /posts/{{? post-id 1}} HTTP/1.1
+  GET /posts/1 HTTP/1.1
   host: {{$ baseUrl}}
   accept: application/json
   user-agent: {{$ userAgent}}

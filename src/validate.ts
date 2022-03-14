@@ -1,4 +1,4 @@
-import { env_rx, parseData } from "./parse";
+import { varTemplatePattern, parseData, secretGlyph } from "./parse";
 import { RestFile } from "./types";
 
 export function validate(restfile: RestFile, env: string): ValidationError[] {
@@ -54,7 +54,7 @@ function validateAllRequestTemplateReferences(
   const dataKeys = Object.keys(data);
 
   for (const request of requests) {
-    for (const match of request.http.matchAll(env_rx)) {
+    for (const match of request.http.matchAll(varTemplatePattern)) {
       if (dataKeys.includes(match[1])) continue;
 
       errors.push({
@@ -65,7 +65,7 @@ function validateAllRequestTemplateReferences(
 
     if (request.headers) {
       for (const [key, value] of Object.entries(request.headers)) {
-        for (const match of value.matchAll(env_rx)) {
+        for (const match of value.matchAll(varTemplatePattern)) {
           if (dataKeys.includes(match[1])) continue;
 
           errors.push({
@@ -78,7 +78,9 @@ function validateAllRequestTemplateReferences(
 
     if (request.body) {
       // TODO: toString is a cheat here
-      for (const match of request.body.toString().matchAll(env_rx)) {
+      for (const match of request.body
+        .toString()
+        .matchAll(varTemplatePattern)) {
         if (dataKeys.includes(match[1])) continue;
 
         errors.push({
@@ -99,7 +101,7 @@ function validateNoSecretsInEnvData(restfile: RestFile): ValidationError[] {
   if (collection.envs) {
     for (const env of collection.envs) {
       const secretKeys = Object.keys(data[env]).filter((key) =>
-        key.endsWith("!")
+        key.endsWith(secretGlyph)
       );
 
       for (const secretKey of secretKeys) {
@@ -127,7 +129,7 @@ function validateAllEnvKeysDefinedInRoot(
       const envKeys = Object.keys(data[env]);
 
       for (const envKey of envKeys) {
-        if (!dataKeys.includes(envKey) && !envKey.endsWith("!")) {
+        if (!dataKeys.includes(envKey) && !envKey.endsWith(secretGlyph)) {
           errors.push({
             key: `data.${env}.${envKey}`,
             message: [
