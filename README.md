@@ -17,7 +17,7 @@ description: >
   This is a good demonstration of some basic functionality restfiles are aiming for.
 envs: [prod]
 ---
-baseUrl: http://localhost
+baseUrl: !!str
 userAgent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
 secretToken!: !!str
 
@@ -76,6 +76,7 @@ http: |+
   host: {{$ baseUrl}}
   user-agent: {{$ userAgent}}
   Authorization: Bearer {{! secretToken}}
+
 ---
 id: user/status
 description: Update user status
@@ -101,7 +102,7 @@ description: >
   This is a good demonstration of some basic functionality restfiles are aiming for.
 envs: [prod]
 ---
-baseUrl: http://localhost
+baseUrl: !!str
 userAgent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
 secretToken!: !!str
 
@@ -124,9 +125,9 @@ id: posts/addPost
 description: Add post to blog
 http: |
   POST /posts HTTP/1.1
-  host: http://example.com
-  content-type: application/json
-  user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+  Host: http://example.com
+  Content-Type: application/json
+  User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
   Authorization: Bearer expectedToken
 
   {"date":"2020-01-02 11:00:46 +06:00","text":"Hello World"}
@@ -135,9 +136,9 @@ id: posts/getPostById
 description: Get blog post by id
 http: |+
   GET /posts/1 HTTP/1.1
-  host: http://example.com
-  accept: application/json
-  user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+  Host: http://example.com
+  Accept: application/json
+  User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
   Authorization: Bearer expectedToken
 
 ---
@@ -158,9 +159,10 @@ id: posts/deletePostById
 description: Delete a blog post
 http: |+
   DELETE /posts/1 HTTP/1.1
-  host: http://example.com
-  user-agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
+  Host: http://example.com
+  User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
   Authorization: Bearer expectedToken
+
 ---
 id: user/status
 description: Update user status
