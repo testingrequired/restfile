@@ -1,6 +1,6 @@
 import { parseData, parseSecrets } from "./parse";
+import { validRestFile } from "./testHelpers";
 import { RestFile } from "./types";
-import { validRestFile } from "./validate.test";
 
 describe("parseData", () => {
   let restfile: RestFile;

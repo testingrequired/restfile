@@ -4,6 +4,13 @@ import { RestFile } from "./types";
 export function validate(restfile: RestFile, env: string): ValidationError[] {
   const errors: ValidationError[] = [];
 
+  errors.push(...validateRestFileTypes(restfile));
+
+  // Exit early if basic types aren't met
+  if (errors.length > 0) {
+    return errors;
+  }
+
   errors.push(...validateHasRequests(restfile));
   errors.push(...validateUniqueRequestIds(restfile));
   errors.push(...validateAllRequestTemplateReferences(restfile, env));
@@ -34,7 +41,7 @@ function validateUniqueRequestIds(restfile: RestFile): ValidationError[] {
 
   let duplicates = [];
 
-  for (let i = 0; i < ids.length; i++) {
+  for (let i = 0; i < ids.length - 1; i++) {
     if (ids[i + 1] === ids[i]) {
       duplicates.push(ids[i]);
     }
@@ -116,6 +123,146 @@ function validateNoSecretsInEnvData(restfile: RestFile): ValidationError[] {
         });
       }
     }
+  }
+
+  return errors;
+}
+
+function validateRestFileTypes(restfile: RestFile): ValidationError[] {
+  const [collection, _, ...requests] = restfile;
+  const errors: ValidationError[] = [];
+
+  switch (typeof collection.name) {
+    case "undefined":
+      errors.push({
+        key: "collection.name",
+        message: "Required but not defined",
+      });
+      break;
+
+    case "string":
+      if (collection.name.length === 0) {
+        errors.push({
+          key: "collection.name",
+          message: "Must be a non zero length string",
+        });
+      }
+      break;
+
+    default:
+      errors.push({
+        key: "collection.name",
+        message: "Must be a non zero length string",
+      });
+      break;
+  }
+
+  switch (typeof collection.description) {
+    case "undefined":
+      break;
+
+    case "string":
+      if (collection.description.length === 0) {
+        errors.push({
+          key: "collection.description",
+          message: "Must be a non zero length string",
+        });
+      }
+      break;
+
+    default:
+      errors.push({
+        key: "collection.description",
+        message: "Must be a non zero length string",
+      });
+      break;
+  }
+
+  for (const [i, request] of requests.entries()) {
+    switch (typeof request.id) {
+      case "undefined":
+        errors.push({
+          key: `requests[${i}].id`,
+          message: "Required but not defined",
+        });
+        break;
+
+      case "string":
+        if (request.id.length === 0) {
+          errors.push({
+            key: `requests[${i}].id`,
+            message: "Must be a non zero length string",
+          });
+        }
+        break;
+
+      default:
+        errors.push({
+          key: `requests[${i}].id`,
+          message: "Must be a non zero length string",
+        });
+        break;
+    }
+
+    switch (typeof request.http) {
+      case "undefined":
+        errors.push({
+          key: `requests[${i}].http`,
+          message: "Required but not defined",
+        });
+        break;
+
+      case "string":
+        if (request.http.length === 0) {
+          errors.push({
+            key: `requests[${i}].http`,
+            message: "Must be a non zero length string",
+          });
+        }
+        break;
+
+      default:
+        errors.push({
+          key: `requests[${i}].http`,
+          message: "Must be a non zero length string",
+        });
+        break;
+    }
+
+    if (request.headers) {
+      if (
+        typeof request.headers === "object" &&
+        !Array.isArray(request.headers)
+      ) {
+        for (const [key, value] of Object.entries(request.headers)) {
+          if (typeof key !== "string") {
+            errors.push({
+              key: `requests[${i}].headers[${key}] header`,
+              message: "Must be a string",
+            });
+          }
+
+          if (typeof value !== "string") {
+            errors.push({
+              key: `requests[${i}].headers["${key}"] value`,
+              message: "Must be a string",
+            });
+          }
+        }
+      } else {
+        errors.push({
+          key: `requests[${i}].headers`,
+          message: "Must be an object",
+        });
+      }
+    }
+  }
+
+  if (!Array.isArray(collection.envs)) {
+    errors.push({
+      key: "collection.description",
+      message: "Must be an array of strings",
+    });
   }
 
   return errors;

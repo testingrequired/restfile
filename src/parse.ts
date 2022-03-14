@@ -32,9 +32,11 @@ export function parseData(
     }
   });
 
-  collection.envs.forEach((env) => {
-    delete envData[env];
-  });
+  if (collection.envs && Array.isArray(collection.envs)) {
+    collection.envs.forEach((env) => {
+      delete envData[env];
+    });
+  }
 
   return envData;
 }
