@@ -129,6 +129,22 @@ describe("validate", () => {
     ]);
   });
 
+  it("should validate env data not defined in the root", () => {
+    const [collection, data] = restfile;
+
+    data.prod = {
+      foo: "bar",
+    };
+
+    expect(validate(restfile, "prod")).toEqual([
+      {
+        key: "data.prod.foo",
+        message:
+          "Key must be defined in data root if defined in env data. e.g. data.foo: !!str && data.prod.foo: 'bar'",
+      },
+    ]);
+  });
+
   describe("validate types", () => {
     describe("collection.name", () => {
       const key = "collection.name";

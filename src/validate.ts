@@ -13,6 +13,7 @@ export function validate(restfile: RestFile, env: string): ValidationError[] {
 
   errors.push(...validateUniqueRequestIds(restfile));
   errors.push(...validateAllRequestTemplateReferences(restfile, env));
+  errors.push(...validateAllEnvKeysDefinedInRoot(restfile));
   errors.push(...validateNoSecretsInEnvData(restfile));
 
   return errors;
@@ -106,6 +107,32 @@ function validateNoSecretsInEnvData(restfile: RestFile): ValidationError[] {
           key: `data.${env}.${secretKey}`,
           message: "Secrets can not be defined in env data",
         });
+      }
+    }
+  }
+
+  return errors;
+}
+
+function validateAllEnvKeysDefinedInRoot(
+  restfile: RestFile
+): ValidationError[] {
+  const [collection, data] = restfile;
+  const dataKeys = Object.keys(data);
+
+  const errors: ValidationError[] = [];
+
+  if (collection.envs) {
+    for (const env of collection.envs) {
+      const envKeys = Object.keys(data[env]);
+
+      for (const envKey of envKeys) {
+        if (!dataKeys.includes(envKey) && !envKey.endsWith("!")) {
+          errors.push({
+            key: `data.${env}.${envKey}`,
+            message: `Key must be defined in data root if defined in env data. e.g. data.${envKey}: !!str && data.${env}.${envKey}: '${data[env][envKey]}'`,
+          });
+        }
       }
     }
   }
