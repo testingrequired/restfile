@@ -260,7 +260,7 @@ function validateRestFileTypes(restfile: RestFile): ValidationError[] {
 
   if (!Array.isArray(collection.envs)) {
     errors.push({
-      key: "collection.description",
+      key: "collection.envs",
       message: "Must be an array of strings",
     });
   }

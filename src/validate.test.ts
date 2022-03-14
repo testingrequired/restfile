@@ -101,6 +101,8 @@ describe("validate", () => {
 
   describe("validate types", () => {
     describe("collection.name", () => {
+      const key = "collection.name";
+
       it("should validate collection name is defined", () => {
         const [collection] = restfile;
 
@@ -108,7 +110,7 @@ describe("validate", () => {
 
         expect(validate(restfile, "prod")).toEqual([
           {
-            key: "collection.name",
+            key,
             message: "Required but not defined",
           },
         ]);
@@ -121,7 +123,7 @@ describe("validate", () => {
 
         expect(validate(restfile, "prod")).toEqual([
           {
-            key: "collection.name",
+            key,
             message: "Must be a non zero length string",
           },
         ]);
@@ -134,7 +136,7 @@ describe("validate", () => {
 
         expect(validate(restfile, "prod")).toEqual([
           {
-            key: "collection.name",
+            key,
             message: "Must be a non zero length string",
           },
         ]);
@@ -142,6 +144,8 @@ describe("validate", () => {
     });
 
     describe("collection.description", () => {
+      const key = "collection.description";
+
       it("should validate collection description is optional", () => {
         const [collection] = restfile;
 
@@ -157,7 +161,7 @@ describe("validate", () => {
 
         expect(validate(restfile, "prod")).toEqual([
           {
-            key: "collection.description",
+            key,
             message: "Must be a non zero length string",
           },
         ]);
@@ -170,7 +174,7 @@ describe("validate", () => {
 
         expect(validate(restfile, "prod")).toEqual([
           {
-            key: "collection.description",
+            key,
             message: "Must be a non zero length string",
           },
         ]);
@@ -178,6 +182,8 @@ describe("validate", () => {
     });
 
     describe("collection.envs", () => {
+      const key = "collection.envs";
+
       it("should validate collection description is optional", () => {
         const [collection] = restfile;
 
@@ -185,7 +191,7 @@ describe("validate", () => {
 
         expect(validate(restfile, "prod")).toEqual([
           {
-            key: "collection.description",
+            key,
             message: "Must be an array of strings",
           },
         ]);
@@ -206,7 +212,7 @@ describe("validate", () => {
 
         expect(validate(restfile, "prod")).toEqual([
           {
-            key: "collection.description",
+            key,
             message: "Must be an array of strings",
           },
         ]);
@@ -215,7 +221,8 @@ describe("validate", () => {
 
     describe("requests", () => {
       describe("request.id", () => {
-        // required
+        const key = "requests[1].id";
+
         it("should validate request id is defined", () => {
           restfile.push({
             id: undefined,
@@ -224,13 +231,12 @@ describe("validate", () => {
 
           expect(validate(restfile, "prod")).toEqual([
             {
-              key: "requests[1].id",
+              key,
               message: "Required but not defined",
             },
           ]);
         });
 
-        // is non zero length string
         it("should validate request id is non zero length string", () => {
           restfile.push({
             id: "",
@@ -239,7 +245,7 @@ describe("validate", () => {
 
           expect(validate(restfile, "prod")).toEqual([
             {
-              key: "requests[1].id",
+              key,
               message: "Must be a non zero length string",
             },
           ]);
@@ -253,7 +259,7 @@ describe("validate", () => {
 
           expect(validate(restfile, "prod")).toEqual([
             {
-              key: "requests[1].id",
+              key,
               message: "Must be a non zero length string",
             },
           ]);
@@ -322,7 +328,8 @@ describe("validate", () => {
       });
 
       describe("request.http", () => {
-        // required
+        const key = "requests[1].http";
+
         it("should validate request http is defined", () => {
           restfile.push({
             id: "test",
@@ -331,13 +338,12 @@ describe("validate", () => {
 
           expect(validate(restfile, "prod")).toEqual([
             {
-              key: "requests[1].http",
+              key,
               message: "Required but not defined",
             },
           ]);
         });
 
-        // is non zero length string
         it("should validate request http is non zero length string", () => {
           restfile.push({
             id: "test",
@@ -346,7 +352,7 @@ describe("validate", () => {
 
           expect(validate(restfile, "prod")).toEqual([
             {
-              key: "requests[1].http",
+              key,
               message: "Must be a non zero length string",
             },
           ]);
@@ -360,7 +366,7 @@ describe("validate", () => {
 
           expect(validate(restfile, "prod")).toEqual([
             {
-              key: "requests[1].http",
+              key,
               message: "Must be a non zero length string",
             },
           ]);
