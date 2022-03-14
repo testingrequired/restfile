@@ -11,24 +11,9 @@ export function validate(restfile: RestFile, env: string): ValidationError[] {
     return errors;
   }
 
-  errors.push(...validateHasRequests(restfile));
   errors.push(...validateUniqueRequestIds(restfile));
   errors.push(...validateAllRequestTemplateReferences(restfile, env));
   errors.push(...validateNoSecretsInEnvData(restfile));
-
-  return errors;
-}
-
-function validateHasRequests(restfile: RestFile): ValidationError[] {
-  const [_, __, ...requests] = restfile;
-  const errors: ValidationError[] = [];
-
-  if (requests.length == 0) {
-    errors.push({
-      key: "requests",
-      message: "No requests defined",
-    });
-  }
 
   return errors;
 }
@@ -129,8 +114,33 @@ function validateNoSecretsInEnvData(restfile: RestFile): ValidationError[] {
 }
 
 function validateRestFileTypes(restfile: RestFile): ValidationError[] {
-  const [collection, _, ...requests] = restfile;
+  const [collection, data, ...requests] = restfile;
   const errors: ValidationError[] = [];
+
+  if (typeof collection === "undefined" || collection === null) {
+    errors.push({
+      key: "collection",
+      message: "Required but not defined",
+    });
+  }
+
+  if (typeof data === "undefined" || data === null) {
+    errors.push({
+      key: "data",
+      message: "Required but not defined",
+    });
+  }
+
+  if (requests === null || requests.length == 0) {
+    errors.push({
+      key: "requests",
+      message: "No requests defined",
+    });
+  }
+
+  if (errors.length > 0) {
+    return errors;
+  }
 
   switch (typeof collection.name) {
     case "undefined":
@@ -179,7 +189,7 @@ function validateRestFileTypes(restfile: RestFile): ValidationError[] {
   }
 
   for (const [i, request] of requests.entries()) {
-    switch (typeof request.id) {
+    switch (typeof request?.id) {
       case "undefined":
         errors.push({
           key: `requests[${i}].id`,
@@ -204,7 +214,7 @@ function validateRestFileTypes(restfile: RestFile): ValidationError[] {
         break;
     }
 
-    switch (typeof request.http) {
+    switch (typeof request?.http) {
       case "undefined":
         errors.push({
           key: `requests[${i}].http`,
@@ -229,7 +239,7 @@ function validateRestFileTypes(restfile: RestFile): ValidationError[] {
         break;
     }
 
-    if (request.headers) {
+    if (request?.headers) {
       if (
         typeof request.headers === "object" &&
         !Array.isArray(request.headers)

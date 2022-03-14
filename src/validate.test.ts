@@ -15,6 +15,36 @@ describe("validate", () => {
     });
   });
 
+  it("should validate that collection, data, request documents are required", () => {
+    expect(validate([] as any, "prod")).toEqual([
+      {
+        key: "collection",
+        message: "Required but not defined",
+      },
+      {
+        key: "data",
+        message: "Required but not defined",
+      },
+      {
+        key: "requests",
+        message: "No requests defined",
+      },
+    ]);
+  });
+
+  it("should validate that collection, data, request documents can't be null", () => {
+    expect(validate([null, null, null] as any, "prod")).toEqual([
+      {
+        key: "collection",
+        message: "Required but not defined",
+      },
+      {
+        key: "data",
+        message: "Required but not defined",
+      },
+    ]);
+  });
+
   it("should validate having no requests defined", () => {
     // Remove any defined requests
     restfile = restfile.slice(0, 2) as RestFile;
