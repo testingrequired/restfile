@@ -3,6 +3,7 @@
 import * as fs from "fs/promises";
 import * as path from "path";
 import { parse } from "./parse";
+import { RestFile } from "./types";
 import { validate } from "./validate";
 import { asyncLoadAll } from "./yaml";
 
@@ -10,36 +11,38 @@ import { asyncLoadAll } from "./yaml";
   const args = process.argv.slice(2);
   const env = process.env.NODE_ENV ?? "local";
 
-  const [restfile, command, ...params] = args;
+  const [restfilePath, command, ...params] = args;
 
-  if (!restfile) {
+  if (!restfilePath) {
     console.log("No restfile specified");
     return;
   }
+
+  let restfile: RestFile;
+
+  try {
+    restfile = await asyncLoadAll(
+      await fs.readFile(path.join(process.cwd(), restfilePath), "utf-8")
+    );
+  } catch (e) {
+    console.log(`Error reading ${restfilePath}: ${e.message}`);
+    return;
+  }
+
+  const errors = validate(restfile, env);
 
   switch (command) {
     case "show":
       {
         const [requestId] = params;
 
-        const spec = await asyncLoadAll(
-          await fs.readFile(path.join(process.cwd(), restfile), "utf-8")
-        );
-
-        const errors = validate(spec, env);
-
-        if (errors.length > 0) {
-          throw new Error(
-            `Invalid restfile:\n\n${JSON.stringify(errors, null, 2)}`
-          );
-        }
-
-        const [_, __, ...requests] = parse(spec, env, {
+        const [_, __, ...requests] = parse(restfile, env, {
           secretToken: "secretToken",
         });
 
+        const requestIds = requests.map((r) => r.id);
+
         if (!requestId) {
-          const requestIds = requests.map((r) => r.id);
           console.log(`Available Requests:\n\n${requestIds.join("\n")}`);
           break;
         }
@@ -48,6 +51,13 @@ import { asyncLoadAll } from "./yaml";
 
         if (request) {
           console.log(request.http);
+        } else {
+          console.log(
+            [
+              `Request not found: ${requestId}`,
+              `Available Requests:\n\n${requestIds.join("\n")}`,
+            ].join("\n")
+          );
         }
       }
 
@@ -55,12 +65,6 @@ import { asyncLoadAll } from "./yaml";
 
     case "validate":
       {
-        const spec = await asyncLoadAll(
-          await fs.readFile(path.join(process.cwd(), restfile), "utf-8")
-        );
-
-        const errors = validate(spec, "prod");
-
         if (errors.length > 0) {
           console.log(
             `Invalid restfile:\n\n${JSON.stringify(errors, null, 2)}`
