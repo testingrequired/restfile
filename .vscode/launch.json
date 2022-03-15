@@ -4,12 +4,19 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
-            "name": "ts-node",
+            "name": "cli",
             "type": "node",
+            "env": {
+                "NODE_ENV": "prod"
+            },
             "request": "launch",
             "args": [
-                "${relativeFile}"
+                "./src/cli.ts",
+                "example.restfile.yml",
+                "execute",
+                "ip"
             ],
             "runtimeArgs": [
                 "-r",

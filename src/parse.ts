@@ -171,7 +171,7 @@ export function parse(
   return output;
 }
 
-function parseHttp(inputHttp: string): HttpZRequestModel {
+export function parseHttp(inputHttp: string): HttpZRequestModel {
   try {
     return httpz.parse(inputHttp.split("\n").join("\r\n")) as HttpZRequestModel;
   } catch (e) {
