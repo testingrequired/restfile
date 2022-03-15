@@ -15,7 +15,8 @@
     "build": "tsup src/index.ts src/cli.ts --dts --sourcemap --format esm,cjs",
     "precli": "npm run build",
     "cli": "node dist/cli.js",
-    "test": "jest"
+    "test": "jest",
+    "coverage": "npm test -- --coverage --collectCoverageFrom=\"./src/**\""
   },
   "author": "",
   "license": "ISC",
