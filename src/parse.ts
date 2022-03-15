@@ -152,10 +152,14 @@ const mapTemplateValuesInRequest =
     return outputRequest;
   };
 
-export function parse(input: RestFile, secrets: Record<string, any>): RestFile {
+export function parse(
+  input: RestFile,
+  env: string,
+  secrets: Record<string, any>
+): RestFile {
   const [inputCollection, inputData, ...inputRequests] = input;
 
-  const envData = parseData(input, "prod");
+  const envData = parseData(input, env);
   const secretData = parseSecrets(input, secrets);
 
   const outputRequests = inputRequests.map(
