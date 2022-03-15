@@ -179,3 +179,50 @@ http: |+
   online
 
 ```
+
+## CLI
+
+There is a very basic CLI to view and execute requests.
+
+### example.restfile.yml
+
+<!-- prettier-ignore -->
+```yaml
+name: Examples
+description: |
+  A restfile full of examples that can be used with the CLI execute.
+envs: [prod]
+---
+{}
+---
+id: ip
+http: |+
+  GET https://get.geojs.io/v1/ip/country.json?ip=8.8.8.8 HTTP/1.1
+
+
+```
+
+### Usage
+
+#### Show
+
+```bash
+$ NODE_ENV=prod npm run cli -- example.restfile.yml show ip
+```
+
+```
+GET https://get.geojs.io/v1/ip/country.json?ip=8.8.8.8 HTTP/1.1
+```
+
+#### Execute
+
+```bash
+$ NODE_ENV=prod npm run cli -- example.restfile.yml execute ip
+```
+
+```
+Fetching: https://get.geojs.io/v1/ip/country.json?ip=8.8.8.8
+Response: 200
+Body:
+[{"country":"US","country_3":"USA","ip":"8.8.8.8","name":"United States"}]
+```
