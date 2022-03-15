@@ -15,6 +15,8 @@ description: >
   A simple collection of requests with some environment variables and prompts.
 
   This is a good demonstration of some basic functionality restfiles are aiming for.
+
+  These requests are purely for demo purposes and do not work.
 envs: [prod]
 ---
 baseUrl: !!str
