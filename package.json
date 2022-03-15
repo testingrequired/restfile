@@ -5,11 +5,16 @@
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "bin": {
+    "restfile": "dist/cli.js"
+  },
   "scripts": {
     "tsup": "tsup",
     "start": "node dist/index.js",
     "dev": "npm run build -- --watch --onSuccess \"npm run start\"",
-    "build": "tsup src/index.ts --dts --sourcemap --format esm,cjs",
+    "build": "tsup src/index.ts src/cli.ts --dts --sourcemap --format esm,cjs",
+    "precli": "npm run build",
+    "cli": "node dist/cli.js",
     "test": "jest"
   },
   "author": "",
