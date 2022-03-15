@@ -107,17 +107,39 @@ http: |+
 
 Information about the collection as a whole.
 
+### name
+
+Name of the collection. Required.
+
+### description
+
+A summary of what the collection is and notes about usage. Optional.
+
+### envs
+
+A list of string env names used get variables from the data document. Required. Must have at least one env defined.
+
 ## Document 1: Data
 
-Templating variables and secrets are defined here.
+Templating variables and secrets are defined here. Variables can be defined at the root level and within each env.
+
+This document can't be empty and must at a minimum defined as
+
+```yaml
+---
+{} # Empty object required else document is null
+---
+```
+
+The validator will inform you if your data document is null.
 
 ## Documents 2..n: Requests
 
 The remaining documents are requests in the collection.
 
-### name
+### id
 
-The name of the request.
+The id of the request. Must be unique within the restfile.
 
 ### description
 
@@ -127,7 +149,7 @@ Some information about the request.
 
 A raw HTTP message string that must include the start line e.g. `GET http://example.com HTTP/1.1`.
 
-It's important that newlines are preserved so the use of [`|+`](https://yaml.org/spec/1.2.2/#23-scalars) is recommended.
+It's important that newlines are preserved so the use of [`|+`](https://yaml.org/spec/1.2.2/#23-scalars) is required.
 
 ### headers/body
 
