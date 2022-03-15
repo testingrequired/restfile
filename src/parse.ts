@@ -96,12 +96,9 @@ const mapTemplateValuesInRequest =
       });
 
       outputRequest.http = buildHttp(http);
-
-      if (outputRequest.id === "posts/patchPostById") {
-        console.log(JSON.stringify(outputRequest.http));
-      }
     }
 
+    // Add body from the request to http
     if (outputRequest.body) {
       const http = parseHttp(outputRequest.http);
 

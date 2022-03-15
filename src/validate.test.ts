@@ -353,7 +353,7 @@ describe("validate", () => {
           expect(validate(restfile, "prod")).toEqual([]);
         });
 
-        it("should validate request headers is an object", () => {
+        it("should validate request headers can't be an array", () => {
           restfile.push({
             id: "test",
             http: "GET http://example.com HTTP/1.1",

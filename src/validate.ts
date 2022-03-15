@@ -303,13 +303,6 @@ function validateRestFileTypes(restfile: RestFile): ValidationError[] {
         !Array.isArray(request.headers)
       ) {
         for (const [key, value] of Object.entries(request.headers)) {
-          if (typeof key !== "string") {
-            errors.push({
-              key: `requests[${i}].headers[${key}] header`,
-              message: "Must be a string",
-            });
-          }
-
           if (typeof value !== "string") {
             errors.push({
               key: `requests[${i}].headers["${key}"] value`,
