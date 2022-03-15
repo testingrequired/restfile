@@ -250,12 +250,30 @@ describe("validate", () => {
         ]);
       });
 
-      it("should validate collection envs can be empty", () => {
+      it("should validate input env is contained in collection.envs", () => {
+        const [collection] = restfile;
+
+        collection.envs = ["local"];
+
+        expect(validate(restfile, "prod")).toEqual([
+          {
+            key: "collection.envs",
+            message: "Restfile does not define an env of prod",
+          },
+        ]);
+      });
+
+      it("should validate collection envs can not be empty", () => {
         const [collection] = restfile;
 
         collection.envs = [];
 
-        expect(validate(restfile, "prod")).toEqual([]);
+        expect(validate(restfile, "prod")).toEqual([
+          {
+            key: "collection.envs",
+            message: "Must defined at least one env",
+          },
+        ]);
       });
 
       it("should validate collection envs is an array", () => {

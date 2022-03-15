@@ -11,6 +11,19 @@ export function validate(restfile: RestFile, env: string): ValidationError[] {
     return errors;
   }
 
+  const [collection] = restfile;
+
+  if (!collection.envs?.includes(env)) {
+    errors.push({
+      key: "collection.envs",
+      message: `Restfile does not define an env of ${env}`,
+    });
+  }
+
+  if (errors.length > 0) {
+    return errors;
+  }
+
   errors.push(...validateUniqueRequestIds(restfile));
   errors.push(...validateAllRequestTemplateReferences(restfile, env));
   errors.push(...validateAllEnvKeysDefinedInRoot(restfile));
@@ -100,6 +113,10 @@ function validateNoSecretsInEnvData(restfile: RestFile): ValidationError[] {
 
   if (collection.envs) {
     for (const env of collection.envs) {
+      if (!data[env]) {
+        continue;
+      }
+
       const secretKeys = Object.keys(data[env]).filter((key) =>
         key.endsWith(secretGlyph)
       );
@@ -126,6 +143,10 @@ function validateAllEnvKeysDefinedInRoot(
 
   if (collection.envs) {
     for (const env of collection.envs) {
+      if (!data[env]) {
+        continue;
+      }
+
       const envKeys = Object.keys(data[env]);
 
       for (const envKey of envKeys) {
@@ -309,6 +330,17 @@ function validateRestFileTypes(restfile: RestFile): ValidationError[] {
     errors.push({
       key: "collection.envs",
       message: "Must be an array of strings",
+    });
+  }
+
+  if (errors.length > 0) {
+    return errors;
+  }
+
+  if (collection.envs.length === 0) {
+    errors.push({
+      key: "collection.envs",
+      message: "Must defined at least one env",
     });
   }
 
