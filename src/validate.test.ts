@@ -98,8 +98,11 @@ describe("validate", () => {
       },
       {
         key: "requests.invalidRequest.body",
-        message:
-          "Reference to undefined variable: {{$ lastOneDoesntExist}} {{$ reallyLastOne}}",
+        message: "Reference to undefined variable: {{$ lastOneDoesntExist}}",
+      },
+      {
+        key: "requests.invalidRequest.body",
+        message: "Reference to undefined variable: {{$ reallyLastOne}}",
       },
     ]);
   });

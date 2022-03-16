@@ -5,9 +5,12 @@ export const varGlyph = "$";
 export const secretGlyph = "!";
 export const promptGlyph = "?";
 
-export const varTemplatePattern = new RegExp(`\{\{\\${varGlyph} (.*)\}\}`, "g");
+export const varTemplatePattern = new RegExp(
+  `\{\{\\${varGlyph} (.*?)\}\}`,
+  "g"
+);
 export const secretTemplatePattern = new RegExp(
-  `\{\{\\${secretGlyph} (.*)\}\}`,
+  `\{\{\\${secretGlyph} (.*?)\}\}`,
   "g"
 );
 export const promptTemplatePattern = new RegExp(
