@@ -16,7 +16,8 @@
                 "./src/cli.ts",
                 "example.restfile.yml",
                 "execute",
-                "ip"
+                "geo",
+                "{\"ipaddr\":\"1.1.1.1\"}"
             ],
             "runtimeArgs": [
                 "-r",

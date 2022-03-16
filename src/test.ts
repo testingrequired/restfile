@@ -12,6 +12,10 @@ describe("test", () => {
     secretToken: "expectedToken",
   };
 
+  const prompts = {
+    postText: "Hello World",
+  };
+
   it("test", async () => {
     const spec = await asyncLoadAll(
       await fs.readFile(path.join(process.cwd(), specFile), "utf-8")
@@ -25,7 +29,7 @@ describe("test", () => {
 
     expect(errors).toEqual([]);
 
-    const actual = parse(spec, "prod", secrets);
+    const actual = parse(spec, "prod", secrets, prompts);
 
     expect(actual).toEqual(expected);
   });

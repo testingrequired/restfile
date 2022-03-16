@@ -7,5 +7,13 @@ envs: [prod]
 ---
 id: ip
 http: |+
-  GET https://get.geojs.io/v1/ip/country.json?ip=8.8.8.8 HTTP/1.1
+  GET https://get.geojs.io/v1/ip.json HTTP/1.1
+
+---
+id: geo
+prompts:
+  ipaddr:
+    default: 8.8.8.8
+http: |+
+  GET https://get.geojs.io/v1/ip/geo.json?ip={{? ipaddr}} HTTP/1.1
 

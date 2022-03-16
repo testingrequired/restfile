@@ -16,11 +16,14 @@ Variables are defined in the data document can be accessed using `{{$ variable}}
 
 Secrets are defined (without a value) in the data document as well and can be accessed using `{{! variable}}` e.g. `{{! baseUrl}}`. These will be provided at runtime by the client implementation.
 
+### Prompts
+
+Prompts are defined in each request and use the `{{? prompt}}` syntax e.g. `{{? id}}`.
+
 ## Example
 
 <!-- prettier-ignore -->
 ```yaml
-# Document 0: Collection
 name: Example Collection
 description: >
   A simple collection of requests with some environment variables and prompts.
@@ -28,15 +31,13 @@ description: >
   This is a good demonstration of some basic functionality restfiles are aiming for.
 envs: [prod]
 ---
-# Document 1: Data
-baseUrl: http://localhost
+baseUrl: !!str
 userAgent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0
 secretToken!: !!str
 
 prod:
   baseUrl: http://example.com
 ---
-# Documents 2..n: Requests
 id: posts/getPosts
 description: Get all posts from the blog
 headers:
@@ -50,6 +51,10 @@ http: |+
 ---
 id: posts/addPost
 description: Add post to blog
+prompts:
+  postText: !!str
+  tags:
+    default: "defaultTag"
 http: |+
   POST /posts HTTP/1.1
   host: {{$ baseUrl}}
@@ -57,12 +62,12 @@ http: |+
   user-agent: {{$ userAgent}}
   Authorization: Bearer {{! secretToken}}
 
-  {"date":"2020-01-02 11:00:46 +06:00","text":"Hello World"}
+  {"date":"2020-01-02 11:00:46 +06:00","text":"{{? postText}}","tags":"{{? tags}}"}
 ---
 id: posts/getPostById
 description: Get blog post by id
 http: |+
-  GET /posts/{{? post-id 1}} HTTP/1.1
+  GET /posts/1 HTTP/1.1
   host: {{$ baseUrl}}
   accept: application/json
   user-agent: {{$ userAgent}}
@@ -89,6 +94,7 @@ http: |+
   host: {{$ baseUrl}}
   user-agent: {{$ userAgent}}
   Authorization: Bearer {{! secretToken}}
+
 ---
 id: user/status
 description: Update user status

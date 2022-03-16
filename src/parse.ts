@@ -1,4 +1,4 @@
-import { RestFile, Request } from "./types";
+import { RestFile, Request, RequestPrompt } from "./types";
 import httpz, { HttpZRequestModel } from "http-z";
 
 export const varGlyph = "$";
@@ -11,7 +11,7 @@ export const secretTemplatePattern = new RegExp(
   "g"
 );
 export const promptTemplatePattern = new RegExp(
-  `\{\{\\${promptGlyph} (.*)\}\}`,
+  `\{\{\\${promptGlyph} (.*?)\}\}`,
   "g"
 );
 
@@ -80,7 +80,11 @@ export function parseSecrets(
 }
 
 const mapTemplateValuesInRequest =
-  (env: Record<string, string>, secretData: Record<string, any>) =>
+  (
+    env: Record<string, string>,
+    secretData: Record<string, any>,
+    prompts?: Record<string, string>
+  ) =>
   (inputRequest: Request): Request => {
     const outputRequest = { ...inputRequest };
 
@@ -134,17 +138,44 @@ const mapTemplateValuesInRequest =
         .join(secretData[match[1]]);
     }
 
-    // Replace template prompts in request.http
-    const httpMatches = promptTemplatePattern.exec(outputRequest.http);
-    if (httpMatches?.length > 2) {
-      outputRequest.http = outputRequest.http
-        .split(`{{${promptGlyph} ${httpMatches[1]} ${httpMatches[2]}}}`)
-        .join(httpMatches[2]);
-    }
+    if (prompts) {
+      // Replace template prompts in request.http
+      for (const httpMatches of outputRequest.http.matchAll(
+        promptTemplatePattern
+      )) {
+        if (httpMatches?.length > 1) {
+          const pattern = httpMatches[0];
+          const promptKey = httpMatches[1];
+          let value = prompts[promptKey];
 
-    // Run all requests through http parser to standardize
-    const http = parseHttp(outputRequest.http);
-    outputRequest.http = buildHttp(http);
+          debugger;
+
+          if (!value) {
+            const requestPrompt = outputRequest.prompts[promptKey];
+
+            debugger;
+
+            switch (typeof requestPrompt) {
+              case "string":
+                value = requestPrompt;
+                break;
+
+              default:
+                value = requestPrompt.default;
+                break;
+            }
+          }
+
+          outputRequest.http = outputRequest.http.split(pattern).join(value);
+        }
+      }
+
+      debugger;
+
+      // Run all requests through http parser to standardize
+      const http = parseHttp(outputRequest.http);
+      outputRequest.http = buildHttp(http);
+    }
 
     return outputRequest;
   };
@@ -152,16 +183,17 @@ const mapTemplateValuesInRequest =
 export function parse(
   input: RestFile,
   env: string,
-  secrets: Record<string, any>
+  secrets: Record<string, any>,
+  prompts?: Record<string, string>
 ): RestFile {
   const [inputCollection, inputData, ...inputRequests] = input;
 
   const envData = parseData(input, env);
   const secretData = parseSecrets(input, secrets);
 
-  const outputRequests = inputRequests.map(
-    mapTemplateValuesInRequest(envData, secretData)
-  );
+  const outputRequests = inputRequests.map((x) => {
+    return mapTemplateValuesInRequest(envData, secretData, prompts)(x);
+  });
 
   const output: RestFile = [inputCollection, inputData, ...outputRequests];
 

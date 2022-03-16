@@ -39,7 +39,15 @@ envs: [prod]
 ---
 id: ip
 http: |+
-  GET https://get.geojs.io/v1/ip/country.json?ip=8.8.8.8 HTTP/1.1
+  GET https://get.geojs.io/v1/ip.json HTTP/1.1
+
+---
+id: geo
+prompts:
+  ipaddr:
+    default: 8.8.8.8
+http: |+
+  GET https://get.geojs.io/v1/ip/geo.json?ip={{? ipaddr}} HTTP/1.1
 
 
 ```
@@ -49,22 +57,41 @@ http: |+
 #### Show
 
 ```bash
-$ NODE_ENV=prod npm run cli -- example.restfile.yml show ip
+$ NODE_ENV=prod npm run cli -- example.restfile.yml show geo
 ```
 
 ```
-GET https://get.geojs.io/v1/ip/country.json?ip=8.8.8.8 HTTP/1.1
+GET https://get.geojs.io/v1/ip/geo.json?ip={{? ipaddr}} HTTP/1.1
 ```
 
 #### Execute
 
 ```bash
-$ NODE_ENV=prod npm run cli -- example.restfile.yml execute ip
+$ NODE_ENV=prod npm run cli -- example.restfile.yml execute geo '{\"ipaddr\":\"1.1.1.1\"}'
 ```
 
 ```
-Fetching: https://get.geojs.io/v1/ip/country.json?ip=8.8.8.8
+GET https://get.geojs.io/v1/ip/geo.json?ip=1.1.1.1 HTTP/1.1
+
+
+Fetching: https://get.geojs.io/v1/ip/geo.json?ip=1.1.1.1
 Response: 200
 Body:
-[{"country":"US","country_3":"USA","ip":"8.8.8.8","name":"United States"}]
+[{"organization_name":"CLOUDFLARENET","accuracy":1000,"asn":13335,"organization":"AS13335 CLOUDFLARENET","timezone":"Australia\/Sydney","longitude":"143.2104","country_code3":"AUS","area_code":"0","ip":"1.1.1.1","country":"Australia","continent_code":"OC","country_code":"AU","latitude":"-33.494"}]
+```
+
+##### With Default Prompt Values
+
+```bash
+$ NODE_ENV=prod npm run cli -- example.restfile.yml execute geo
+```
+
+```
+GET https://get.geojs.io/v1/ip/geo.json?ip=8.8.8.8 HTTP/1.1
+
+
+Fetching: https://get.geojs.io/v1/ip/geo.json?ip=8.8.8.8
+Response: 200
+Body:
+[{"organization_name":"GOOGLE","accuracy":1000,"asn":15169,"organization":"AS15169 GOOGLE","timezone":"America\/Chicago","longitude":"-97.822","country_code3":"USA","area_code":"0","ip":"8.8.8.8","country":"United States","continent_code":"NA","country_code":"US","latitude":"37.751"}]
 ```

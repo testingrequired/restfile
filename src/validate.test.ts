@@ -152,6 +152,133 @@ describe("validate", () => {
     ]);
   });
 
+  describe("prompts", () => {
+    it("should validate that request.prompts is not an array", () => {
+      restfile.push({
+        id: "test",
+        prompts: [],
+        http: "GET http://example.com HTTP/1.1",
+      });
+
+      expect(validate(restfile, "prod")).toEqual([
+        {
+          key: "requests.test.prompts",
+          message: "Must be as an object",
+        },
+      ]);
+    });
+
+    it("should validate that request.prompts is not a string", () => {
+      restfile.push({
+        id: "test",
+        prompts: "",
+        http: "GET http://example.com HTTP/1.1",
+      });
+
+      expect(validate(restfile, "prod")).toEqual([
+        {
+          key: "requests.test.prompts",
+          message: "Must be as an object",
+        },
+      ]);
+    });
+
+    it("should validate that request.prompts is not a number", () => {
+      restfile.push({
+        id: "test",
+        prompts: 123,
+        http: "GET http://example.com HTTP/1.1",
+      });
+
+      expect(validate(restfile, "prod")).toEqual([
+        {
+          key: "requests.test.prompts",
+          message: "Must be as an object",
+        },
+      ]);
+    });
+
+    it("should validate that defined prompt can not be an array", () => {
+      restfile.push({
+        id: "test",
+        prompts: {
+          arr: [],
+        },
+        http: `GET http://example.com HTTP/1.1
+        
+        {{? arr}}
+        `,
+      });
+
+      expect(validate(restfile, "prod")).toEqual([
+        {
+          key: "requests.test.prompts.arr",
+          message: "Must be a string, number or an object with a default value",
+        },
+      ]);
+    });
+
+    it("should validate that defined prompt has a default value if an object", () => {
+      restfile.push({
+        id: "test",
+        prompts: {
+          a: {},
+          b: {
+            default: "",
+          },
+        },
+        http: `GET http://example.com HTTP/1.1
+        
+        {{? a}} {{? b}}
+        `,
+      });
+
+      expect(validate(restfile, "prod")).toEqual([
+        {
+          key: "requests.test.prompts.a",
+          message: "Must be a string, number or an object with a default value",
+        },
+      ]);
+    });
+
+    it("should validate that all referenced prompts are defined", () => {
+      restfile.push({
+        id: "test",
+        prompts: {},
+        http: `GET http://example.com HTTP/1.1
+        
+        {{? a}}
+        `,
+      });
+
+      expect(validate(restfile, "prod")).toEqual([
+        {
+          key: "requests.test.http",
+          message: "Referencing undefined prompt: a",
+        },
+      ]);
+    });
+
+    it("should validate that all defined prompts are referenced", () => {
+      restfile.push({
+        id: "test",
+        prompts: {
+          a: "",
+        },
+        http: `GET http://example.com HTTP/1.1
+
+        `,
+      });
+
+      expect(validate(restfile, "prod")).toEqual([
+        {
+          key: "requests.test.prompts.a",
+          message: "Defined prompt never referenced",
+        },
+      ]);
+    });
+  });
+
   describe("validate types", () => {
     describe("collection.name", () => {
       const key = "collection.name";

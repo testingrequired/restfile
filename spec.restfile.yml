@@ -25,6 +25,10 @@ http: |+
 ---
 id: posts/addPost
 description: Add post to blog
+prompts:
+  postText: !!str
+  tags:
+    default: "defaultTag"
 http: |+
   POST /posts HTTP/1.1
   host: {{$ baseUrl}}
@@ -32,7 +36,7 @@ http: |+
   user-agent: {{$ userAgent}}
   Authorization: Bearer {{! secretToken}}
 
-  {"date":"2020-01-02 11:00:46 +06:00","text":"Hello World"}
+  {"date":"2020-01-02 11:00:46 +06:00","text":"{{? postText}}","tags":"{{? tags}}"}
 ---
 id: posts/getPostById
 description: Get blog post by id

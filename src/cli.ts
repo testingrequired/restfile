@@ -76,28 +76,49 @@ import fetch from "node-fetch";
 
     case "execute":
       {
-        const [requestId] = params;
+        const [requestId, promptsJson = "{}"] = params;
 
-        const [_, __, ...requests] = parse(restfile, env, {
+        const parsedRestfile = parse(restfile, env, {
           secretToken: "secretToken",
         });
 
-        const requestIds = requests.map((r) => r.id);
+        const [_, __, ...requests_] = parsedRestfile;
+
+        const requestIds = requests_.map((r) => r.id);
 
         if (!requestId) {
           console.log(`Available Requests:\n\n${requestIds.join("\n")}`);
           break;
         }
 
-        const request = requests.find((r) => r.id === requestId);
+        let request = requests_.find((r) => r.id === requestId);
+
+        if (request.prompts) {
+          let prompts;
+
+          try {
+            prompts = JSON.parse(promptsJson);
+          } catch (e) {
+            console.log(`Invalid prompts JSON string: ${e.message}`);
+            break;
+          }
+
+          const [_, __, ...requests] = parse(
+            restfile,
+            env,
+            {
+              secretToken: "secretToken",
+            },
+            prompts
+          );
+
+          request = requests.find((r) => r.id === requestId);
+        }
 
         if (request) {
+          console.log(request.http);
+
           const httpObj = parseHttp(request.http);
-          const qs = new URLSearchParams(
-            httpObj.queryParams.reduce((acc, item) => {
-              return { ...acc, ...{ [item.name]: item.value } };
-            }, {})
-          ).toString();
 
           const url = httpObj.target;
 

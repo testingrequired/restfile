@@ -1,4 +1,9 @@
-import { varTemplatePattern, parseData, secretGlyph } from "./parse";
+import {
+  varTemplatePattern,
+  parseData,
+  secretGlyph,
+  promptTemplatePattern,
+} from "./parse";
 import { RestFile } from "./types";
 
 export function validate(restfile: RestFile, env: string): ValidationError[] {
@@ -28,6 +33,7 @@ export function validate(restfile: RestFile, env: string): ValidationError[] {
   errors.push(...validateAllRequestTemplateReferences(restfile, env));
   errors.push(...validateAllEnvKeysDefinedInRoot(restfile));
   errors.push(...validateNoSecretsInEnvData(restfile));
+  errors.push(...validateRequestPrompts(restfile));
 
   return errors;
 }
@@ -335,6 +341,82 @@ function validateRestFileTypes(restfile: RestFile): ValidationError[] {
       key: "collection.envs",
       message: "Must defined at least one env",
     });
+  }
+
+  return errors;
+}
+
+function validateRequestPrompts(restfile: RestFile): ValidationError[] {
+  const [_, __, ...requests] = restfile;
+
+  const errors: ValidationError[] = [];
+
+  for (const request of requests) {
+    if (typeof request.prompts === "undefined") {
+      continue;
+    }
+
+    if (Array.isArray(request.prompts) || typeof request.prompts !== "object") {
+      errors.push({
+        key: `requests.${request.id}.prompts`,
+        message: "Must be as an object",
+      });
+
+      return errors;
+    }
+
+    for (const [_, ...matches] of JSON.stringify(request).matchAll(
+      promptTemplatePattern
+    )) {
+      const requestPromptReferences = Array.from(new Set(matches));
+
+      for (const requestPromptReference of requestPromptReferences) {
+        if (Object.keys(request.prompts).includes(requestPromptReference)) {
+          continue;
+        }
+
+        errors.push({
+          key: "requests.test.http",
+          message: `Referencing undefined prompt: ${requestPromptReference}`,
+        });
+      }
+    }
+
+    for (const requestPromptsKey of Object.keys(request.prompts)) {
+      let requestPromptReferences = [];
+
+      for (const [_, ...matches] of JSON.stringify(request).matchAll(
+        promptTemplatePattern
+      )) {
+        if (!requestPromptReferences.includes(matches[0])) {
+          requestPromptReferences.push(matches[0]);
+        }
+      }
+
+      if (requestPromptReferences.includes(requestPromptsKey)) {
+        continue;
+      }
+
+      errors.push({
+        key: `requests.${request.id}.prompts.${requestPromptsKey}`,
+        message: "Defined prompt never referenced",
+      });
+    }
+
+    for (const [key, value] of Object.entries(request.prompts)) {
+      if (typeof value === "string") {
+        continue;
+      }
+
+      if (value.hasOwnProperty("default")) {
+        continue;
+      }
+
+      errors.push({
+        key: `requests.${request.id}.prompts.${key}`,
+        message: "Must be a string, number or an object with a default value",
+      });
+    }
   }
 
   return errors;
