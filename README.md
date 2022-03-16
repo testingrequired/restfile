@@ -35,11 +35,11 @@ description: |
   A restfile full of examples that can be used with the CLI execute.
 envs: [prod]
 ---
-{}
+baseUrl: https://get.geojs.io/v1
 ---
 id: ip
 http: |+
-  GET https://get.geojs.io/v1/ip.json HTTP/1.1
+  GET {{$ baseUrl}}/ip.json HTTP/1.1
 
 ---
 id: geo
@@ -47,7 +47,7 @@ prompts:
   ipaddr:
     default: 8.8.8.8
 http: |+
-  GET https://get.geojs.io/v1/ip/geo.json?ip={{? ipaddr}} HTTP/1.1
+  GET {{$ baseUrl}}/ip/geo.json?ip={{? ipaddr}} HTTP/1.1
 
 
 ```
