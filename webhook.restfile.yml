@@ -1,0 +1,21 @@
+name: Webhook Tests
+envs: [localhost]
+---
+baseUrl: https://webhook.site/f4cae200-3d96-4ed7-8be9-dea2789c53f4
+---
+id: test
+http: |+
+  POST {{$ baseUrl}} HTTP/1.1
+  User-Agent: Hello
+
+  test body
+
+---
+id: form
+http: |+
+  POST {{$ baseUrl}} HTTP/1.1
+  Content-Type: application/x-www-form-urlencoded
+  User-Agent: Hello
+
+  a=1&b=2
+

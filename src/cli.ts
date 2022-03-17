@@ -7,6 +7,7 @@ import { RestFile } from "./types";
 import { validate } from "./validate";
 import { asyncLoadAll } from "./yaml";
 import fetch from "node-fetch";
+import { mapBodyForFetch, mapHeadersForFetch } from "./execute";
 
 (async () => {
   const args = process.argv.slice(2);
@@ -126,7 +127,8 @@ import fetch from "node-fetch";
 
           const response = await fetch(url, {
             method: httpObj.method,
-            body: httpObj.body?.text,
+            body: mapBodyForFetch(httpObj),
+            headers: mapHeadersForFetch(httpObj),
           });
 
           console.log(`Response: ${response.status}`);

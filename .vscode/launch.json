@@ -9,15 +9,14 @@
             "name": "cli",
             "type": "node",
             "env": {
-                "NODE_ENV": "prod"
+                "NODE_ENV": "localhost"
             },
             "request": "launch",
             "args": [
                 "./src/cli.ts",
-                "example.restfile.yml",
+                "webhook.restfile.yml",
                 "execute",
-                "geo",
-                "{\"ipaddr\":\"1.1.1.1\"}"
+                "form"
             ],
             "runtimeArgs": [
                 "-r",
