@@ -162,7 +162,7 @@ import { mapBodyForFetch, mapHeadersForFetch } from "./execute";
       break;
 
     default:
-      console.log(`Available commands: ${Object.values(Command)}`);
+      console.log(`Available commands: ${Object.values(Command).join(", ")}`);
       break;
   }
 })();
