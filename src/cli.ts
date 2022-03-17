@@ -43,8 +43,8 @@ import { mapBodyForFetch, mapHeadersForFetch } from "./execute";
     return;
   }
 
-  switch (command) {
-    case "show":
+  switch (command as Command) {
+    case Command.Show:
       {
         const [requestId] = params;
 
@@ -75,7 +75,7 @@ import { mapBodyForFetch, mapHeadersForFetch } from "./execute";
 
       break;
 
-    case "execute":
+    case Command.Execute:
       {
         const [requestId, promptsJson = "{}"] = params;
 
@@ -148,7 +148,7 @@ import { mapBodyForFetch, mapHeadersForFetch } from "./execute";
 
       break;
 
-    case "validate":
+    case Command.Validate:
       {
         if (errors.length > 0) {
           console.log(
@@ -162,7 +162,13 @@ import { mapBodyForFetch, mapHeadersForFetch } from "./execute";
       break;
 
     default:
-      console.log(`Available commands: show, validate, execute`);
+      console.log(`Available commands: ${Object.values(Command)}`);
       break;
   }
 })();
+
+enum Command {
+  Show = "show",
+  Validate = "validate",
+  Execute = "execute",
+}
