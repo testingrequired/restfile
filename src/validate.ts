@@ -376,7 +376,7 @@ function validateRequestPrompts(restfile: RestFile): ValidationError[] {
         }
 
         errors.push({
-          key: "requests.test.http",
+          key: `requests.${request.id}.http`,
           message: `Referencing undefined prompt: ${requestPromptReference}`,
         });
       }
