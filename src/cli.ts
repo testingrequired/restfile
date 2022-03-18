@@ -86,9 +86,17 @@ import { mapBodyForFetch, mapHeadersForFetch } from "./execute";
         const [_, __, ...requests_] = parsedRestfile;
 
         const requestIds = requests_.map((r) => r.id);
+        const availableRequestIds = requestIds.join(", ");
 
         if (!requestId) {
-          console.log(`Available Requests:\n\n${requestIds.join("\n")}`);
+          console.log(`Available Requests:\n\n${availableRequestIds}`);
+          break;
+        }
+
+        if (!requestIds.includes(requestId)) {
+          console.log(
+            `No request with an id of "${requestId}". Please selected one of the following: ${availableRequestIds}`
+          );
           break;
         }
 
