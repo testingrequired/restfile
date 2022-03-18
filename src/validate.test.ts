@@ -15,31 +15,27 @@ describe("validate", () => {
     });
   });
 
-  it("should validate that collection, data, request documents are required", () => {
+  it("should validate that undefined collection, data and request documents will display correct validation messages", () => {
     expect(validate([] as any, "prod")).toEqual([
       {
-        key: "collection",
+        key: "collection.name",
         message: "Required but not defined",
       },
       {
-        key: "data",
+        key: "collection.envs",
         message: "Required but not defined",
-      },
-      {
-        key: "requests",
-        message: "No requests defined",
       },
     ]);
   });
 
-  it("should validate that collection, data, request documents can't be null", () => {
+  it("should validate that null collection, data and request documents will display correct validation messages", () => {
     expect(validate([null, null, null] as any, "prod")).toEqual([
       {
-        key: "collection",
+        key: "collection.name",
         message: "Required but not defined",
       },
       {
-        key: "data",
+        key: "collection.envs",
         message: "Required but not defined",
       },
     ]);
@@ -49,12 +45,7 @@ describe("validate", () => {
     // Remove any defined requests
     restfile = restfile.slice(0, 2) as RestFile;
 
-    expect(validate(restfile, "prod")).toEqual([
-      {
-        key: "requests",
-        message: "No requests defined",
-      },
-    ]);
+    expect(validate(restfile, "prod")).toEqual([]);
   });
 
   it("should validate no duplicate request ids", () => {
@@ -375,7 +366,7 @@ describe("validate", () => {
         expect(validate(restfile, "prod")).toEqual([
           {
             key,
-            message: "Must be an array of strings",
+            message: "Required but not defined",
           },
         ]);
       });

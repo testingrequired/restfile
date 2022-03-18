@@ -4,7 +4,7 @@ import {
   secretGlyph,
   promptTemplatePattern,
 } from "./parse";
-import { RestFile } from "./types";
+import { Collection, RestFile } from "./types";
 
 export function validate(restfile: RestFile, env: string): ValidationError[] {
   const errors: ValidationError[] = [];
@@ -178,35 +178,10 @@ function validateAllEnvKeysDefinedInRoot(
 }
 
 function validateRestFileTypes(restfile: RestFile): ValidationError[] {
-  const [collection, data, ...requests] = restfile;
+  const [collection = {} as Collection, data, ...requests] = restfile;
   const errors: ValidationError[] = [];
 
-  if (typeof collection === "undefined" || collection === null) {
-    errors.push({
-      key: "collection",
-      message: "Required but not defined",
-    });
-  }
-
-  if (typeof data === "undefined" || data === null) {
-    errors.push({
-      key: "data",
-      message: "Required but not defined",
-    });
-  }
-
-  if (requests === null || requests.length == 0) {
-    errors.push({
-      key: "requests",
-      message: "No requests defined",
-    });
-  }
-
-  if (errors.length > 0) {
-    return errors;
-  }
-
-  switch (typeof collection.name) {
+  switch (typeof collection?.name) {
     case "undefined":
       errors.push({
         key: "collection.name",
@@ -231,7 +206,7 @@ function validateRestFileTypes(restfile: RestFile): ValidationError[] {
       break;
   }
 
-  switch (typeof collection.description) {
+  switch (typeof collection?.description) {
     case "undefined":
       break;
 
@@ -252,7 +227,7 @@ function validateRestFileTypes(restfile: RestFile): ValidationError[] {
       break;
   }
 
-  for (const [i, request] of requests.entries()) {
+  for (const [i, request] of requests.filter((x) => x).entries()) {
     switch (typeof request?.id) {
       case "undefined":
         errors.push({
@@ -325,18 +300,25 @@ function validateRestFileTypes(restfile: RestFile): ValidationError[] {
     }
   }
 
-  if (!Array.isArray(collection.envs)) {
+  if (!collection?.envs) {
     errors.push({
       key: "collection.envs",
-      message: "Must be an array of strings",
+      message: "Required but not defined",
     });
+  } else {
+    if (!Array.isArray(collection?.envs)) {
+      errors.push({
+        key: "collection.envs",
+        message: "Must be an array of strings",
+      });
+    }
   }
 
   if (errors.length > 0) {
     return errors;
   }
 
-  if (collection.envs.length === 0) {
+  if (collection?.envs.length === 0) {
     errors.push({
       key: "collection.envs",
       message: "Must defined at least one env",

@@ -30,6 +30,10 @@ export function parseData(
 ): Record<string, string> {
   const [collection, data, __] = restfile;
 
+  if (data === null) {
+    restfile[1] = {};
+  }
+
   const envData = {};
 
   Object.entries(data).forEach(([key, value]) => {
