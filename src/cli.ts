@@ -9,8 +9,7 @@ import { asyncLoadAll } from "./yaml";
 import fetch from "node-fetch";
 import { mapBodyForFetch, mapHeadersForFetch } from "./execute";
 import yargs from "yargs";
-import { Select, PromptOptions } from "enquirer/lib/prompts";
-import { prompt } from "enquirer";
+import { Select, Form, FormPromptOptions } from "enquirer/lib/prompts";
 
 (async () => {
   yargs(process.argv.slice(2))
@@ -211,11 +210,10 @@ import { prompt } from "enquirer";
         let request = requests_.find((r) => r.id === requestId);
 
         if (request.prompts) {
-          let prompts: PromptOptions[] = [];
+          let prompts: FormPromptOptions[] = [];
 
           for (const [key, value] of Object.entries(request.prompts)) {
-            const prompt: PromptOptions = {
-              type: "input",
+            const prompt: FormPromptOptions = {
               name: key,
               message: key,
             };
@@ -230,7 +228,13 @@ import { prompt } from "enquirer";
             prompts.push(prompt);
           }
 
-          let promptData = await prompt<Record<string, string>>(prompts);
+          const formPrompt = new Form({
+            name: "prompts",
+            message: "Please Fill In Request Prompts:",
+            choices: prompts,
+          });
+
+          const promptData = await formPrompt.run();
 
           const [_, __, ...requests] = parse(
             restfile,
