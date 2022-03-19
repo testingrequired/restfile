@@ -25,7 +25,7 @@ describe("test", () => {
       await fs.readFile(path.join(process.cwd(), expectedFile), "utf-8")
     );
 
-    const errors = validate(spec, "prod");
+    const errors = validate(spec);
 
     expect(errors).toEqual([]);
 

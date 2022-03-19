@@ -1,12 +1,12 @@
 import {
   varTemplatePattern,
-  parseData,
   secretGlyph,
   promptTemplatePattern,
+  parseDataKeys,
 } from "./parse";
 import { Collection, RestFile } from "./types";
 
-export function validate(restfile: RestFile, env: string): ValidationError[] {
+export function validate(restfile: RestFile): ValidationError[] {
   const errors: ValidationError[] = [];
 
   errors.push(...validateRestFileTypes(restfile));
@@ -16,21 +16,8 @@ export function validate(restfile: RestFile, env: string): ValidationError[] {
     return errors;
   }
 
-  const [collection] = restfile;
-
-  if (!collection.envs?.includes(env)) {
-    errors.push({
-      key: "collection.envs",
-      message: `Restfile does not define an env of ${env}`,
-    });
-  }
-
-  if (errors.length > 0) {
-    return errors;
-  }
-
   errors.push(...validateUniqueRequestIds(restfile));
-  errors.push(...validateAllRequestTemplateReferences(restfile, env));
+  errors.push(...validateAllRequestTemplateReferences(restfile));
   errors.push(...validateAllEnvKeysDefinedInRoot(restfile));
   errors.push(...validateNoSecretsInEnvData(restfile));
   errors.push(...validateRequestPrompts(restfile));
@@ -63,14 +50,12 @@ function validateUniqueRequestIds(restfile: RestFile): ValidationError[] {
 }
 
 function validateAllRequestTemplateReferences(
-  restfile: RestFile,
-  env: string
+  restfile: RestFile
 ): ValidationError[] {
   const [_, __, ...requests] = restfile;
   const errors: ValidationError[] = [];
 
-  const data = parseData(restfile, env);
-  const dataKeys = Object.keys(data);
+  const dataKeys = parseDataKeys(restfile);
 
   for (const request of requests) {
     for (const match of request.http.matchAll(varTemplatePattern)) {

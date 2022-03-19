@@ -11,12 +11,12 @@ describe("validate", () => {
 
   describe("validRestFile", () => {
     it("should pass validation", () => {
-      expect(validate(validRestFile(["prod"]), "prod")).toEqual([]);
+      expect(validate(validRestFile(["prod"]))).toEqual([]);
     });
   });
 
   it("should validate that undefined collection, data and request documents will display correct validation messages", () => {
-    expect(validate([] as any, "prod")).toEqual([
+    expect(validate([] as any)).toEqual([
       {
         key: "collection.name",
         message: "Required but not defined",
@@ -29,7 +29,7 @@ describe("validate", () => {
   });
 
   it("should validate that null collection, data and request documents will display correct validation messages", () => {
-    expect(validate([null, null, null] as any, "prod")).toEqual([
+    expect(validate([null, null, null] as any)).toEqual([
       {
         key: "collection.name",
         message: "Required but not defined",
@@ -45,7 +45,7 @@ describe("validate", () => {
     // Remove any defined requests
     restfile = restfile.slice(0, 2) as RestFile;
 
-    expect(validate(restfile, "prod")).toEqual([]);
+    expect(validate(restfile)).toEqual([]);
   });
 
   it("should validate no duplicate request ids", () => {
@@ -56,7 +56,7 @@ describe("validate", () => {
       { id: "3", http: "GET http://example.com/4" }
     );
 
-    expect(validate(restfile, "prod")).toEqual([
+    expect(validate(restfile)).toEqual([
       {
         key: "requests",
         message: "Duplicate request id: 1",
@@ -78,7 +78,7 @@ describe("validate", () => {
       http: `GET http://example.com/1\nCustom: {{$ doesntExist}}`,
     });
 
-    expect(validate(restfile, "prod")).toEqual([
+    expect(validate(restfile)).toEqual([
       {
         key: "requests.invalidRequest.http",
         message: "Reference to undefined variable: {{$ doesntExist}}",
@@ -111,7 +111,7 @@ describe("validate", () => {
 
     data.prod["invalidSecretValue!"] = "";
 
-    expect(validate(restfile, "prod")).toEqual([
+    expect(validate(restfile)).toEqual([
       {
         key: "data.prod.invalidSecretValue!",
         message: "Secrets can not be defined in env data",
@@ -130,7 +130,7 @@ describe("validate", () => {
       foo: "bar",
     };
 
-    expect(validate(restfile, "prod")).toEqual([
+    expect(validate(restfile)).toEqual([
       {
         key: "data.prod.foo",
         message: [
@@ -154,7 +154,7 @@ describe("validate", () => {
         http: "GET http://example.com HTTP/1.1",
       });
 
-      expect(validate(restfile, "prod")).toEqual([
+      expect(validate(restfile)).toEqual([
         {
           key: "requests.test.prompts",
           message: "Must be as an object",
@@ -169,7 +169,7 @@ describe("validate", () => {
         http: "GET http://example.com HTTP/1.1",
       });
 
-      expect(validate(restfile, "prod")).toEqual([
+      expect(validate(restfile)).toEqual([
         {
           key: "requests.test.prompts",
           message: "Must be as an object",
@@ -184,7 +184,7 @@ describe("validate", () => {
         http: "GET http://example.com HTTP/1.1",
       });
 
-      expect(validate(restfile, "prod")).toEqual([
+      expect(validate(restfile)).toEqual([
         {
           key: "requests.test.prompts",
           message: "Must be as an object",
@@ -204,7 +204,7 @@ describe("validate", () => {
         `,
       });
 
-      expect(validate(restfile, "prod")).toEqual([
+      expect(validate(restfile)).toEqual([
         {
           key: "requests.test.prompts.arr",
           message: "Must be a string, number or an object with a default value",
@@ -227,7 +227,7 @@ describe("validate", () => {
         `,
       });
 
-      expect(validate(restfile, "prod")).toEqual([
+      expect(validate(restfile)).toEqual([
         {
           key: "requests.test.prompts.a",
           message: "Must be a string, number or an object with a default value",
@@ -245,7 +245,7 @@ describe("validate", () => {
         `,
       });
 
-      expect(validate(restfile, "prod")).toEqual([
+      expect(validate(restfile)).toEqual([
         {
           key: "requests.test.http",
           message: "Referencing undefined prompt: a",
@@ -264,7 +264,7 @@ describe("validate", () => {
         `,
       });
 
-      expect(validate(restfile, "prod")).toEqual([
+      expect(validate(restfile)).toEqual([
         {
           key: "requests.test.prompts.a",
           message: "Defined prompt never referenced",
@@ -282,7 +282,7 @@ describe("validate", () => {
 
         collection.name = undefined;
 
-        expect(validate(restfile, "prod")).toEqual([
+        expect(validate(restfile)).toEqual([
           {
             key,
             message: "Required but not defined",
@@ -295,7 +295,7 @@ describe("validate", () => {
 
         (collection as any).name = 123;
 
-        expect(validate(restfile, "prod")).toEqual([
+        expect(validate(restfile)).toEqual([
           {
             key,
             message: "Must be a non zero length string",
@@ -308,7 +308,7 @@ describe("validate", () => {
 
         collection.name = "";
 
-        expect(validate(restfile, "prod")).toEqual([
+        expect(validate(restfile)).toEqual([
           {
             key,
             message: "Must be a non zero length string",
@@ -325,7 +325,7 @@ describe("validate", () => {
 
         collection.description = undefined;
 
-        expect(validate(restfile, "prod")).toEqual([]);
+        expect(validate(restfile)).toEqual([]);
       });
 
       it("should validate collection description is a string", () => {
@@ -333,7 +333,7 @@ describe("validate", () => {
 
         (collection as any).description = 123;
 
-        expect(validate(restfile, "prod")).toEqual([
+        expect(validate(restfile)).toEqual([
           {
             key,
             message: "Must be a non zero length string",
@@ -346,7 +346,7 @@ describe("validate", () => {
 
         collection.description = "";
 
-        expect(validate(restfile, "prod")).toEqual([
+        expect(validate(restfile)).toEqual([
           {
             key,
             message: "Must be a non zero length string",
@@ -363,23 +363,10 @@ describe("validate", () => {
 
         collection.envs = undefined;
 
-        expect(validate(restfile, "prod")).toEqual([
+        expect(validate(restfile)).toEqual([
           {
             key,
             message: "Required but not defined",
-          },
-        ]);
-      });
-
-      it("should validate input env is contained in collection.envs", () => {
-        const [collection] = restfile;
-
-        collection.envs = ["local"];
-
-        expect(validate(restfile, "prod")).toEqual([
-          {
-            key: "collection.envs",
-            message: "Restfile does not define an env of prod",
           },
         ]);
       });
@@ -389,7 +376,7 @@ describe("validate", () => {
 
         collection.envs = [];
 
-        expect(validate(restfile, "prod")).toEqual([
+        expect(validate(restfile)).toEqual([
           {
             key: "collection.envs",
             message: "Must defined at least one env",
@@ -402,7 +389,7 @@ describe("validate", () => {
 
         (collection as any).envs = 123;
 
-        expect(validate(restfile, "prod")).toEqual([
+        expect(validate(restfile)).toEqual([
           {
             key,
             message: "Must be an array of strings",
@@ -421,7 +408,7 @@ describe("validate", () => {
             http: "GET http://example.com HTTP/1.1",
           });
 
-          expect(validate(restfile, "prod")).toEqual([
+          expect(validate(restfile)).toEqual([
             {
               key,
               message: "Required but not defined",
@@ -435,7 +422,7 @@ describe("validate", () => {
             http: "GET http://example.com HTTP/1.1",
           });
 
-          expect(validate(restfile, "prod")).toEqual([
+          expect(validate(restfile)).toEqual([
             {
               key,
               message: "Must be a non zero length string",
@@ -449,7 +436,7 @@ describe("validate", () => {
             http: "GET http://example.com HTTP/1.1",
           });
 
-          expect(validate(restfile, "prod")).toEqual([
+          expect(validate(restfile)).toEqual([
             {
               key,
               message: "Must be a non zero length string",
@@ -471,7 +458,7 @@ describe("validate", () => {
             headers: {},
           });
 
-          expect(validate(restfile, "prod")).toEqual([]);
+          expect(validate(restfile)).toEqual([]);
         });
 
         it("should validate request headers can't be an array", () => {
@@ -481,7 +468,7 @@ describe("validate", () => {
             headers: [],
           });
 
-          expect(validate(restfile, "prod")).toEqual([
+          expect(validate(restfile)).toEqual([
             {
               key: `requests[1].headers`,
               message: "Must be an object",
@@ -498,7 +485,7 @@ describe("validate", () => {
             },
           });
 
-          expect(validate(restfile, "prod")).toEqual([]);
+          expect(validate(restfile)).toEqual([]);
         });
 
         it("should validate request headers values are strings", () => {
@@ -510,7 +497,7 @@ describe("validate", () => {
             },
           });
 
-          expect(validate(restfile, "prod")).toEqual([
+          expect(validate(restfile)).toEqual([
             {
               key: `requests[1].headers["content-type"] value`,
               message: "Must be a string",
@@ -528,7 +515,7 @@ describe("validate", () => {
             http: undefined,
           });
 
-          expect(validate(restfile, "prod")).toEqual([
+          expect(validate(restfile)).toEqual([
             {
               key,
               message: "Required but not defined",
@@ -542,7 +529,7 @@ describe("validate", () => {
             http: "",
           });
 
-          expect(validate(restfile, "prod")).toEqual([
+          expect(validate(restfile)).toEqual([
             {
               key,
               message: "Must be a non zero length string",
@@ -556,7 +543,7 @@ describe("validate", () => {
             http: [],
           });
 
-          expect(validate(restfile, "prod")).toEqual([
+          expect(validate(restfile)).toEqual([
             {
               key,
               message: "Must be a non zero length string",

@@ -60,6 +60,39 @@ export function parseData(
 
 /**
  *
+ * @param {RestFile} restfile Target RestFile to parse data from
+ * @param {string} env Name of environment
+ * @returns Array of data keys
+ */
+export function parseDataKeys(restfile: RestFile): string[] {
+  const [collection, data, __] = restfile;
+
+  if (data === null) {
+    restfile[1] = {};
+  }
+
+  const envData = {};
+
+  Object.entries(data).forEach(([key, value]) => {
+    // Skip Secrets
+    if (key.endsWith(secretGlyph)) {
+      return;
+    }
+
+    envData[key] = value;
+  });
+
+  if (collection.envs && Array.isArray(collection.envs)) {
+    collection.envs.forEach((env) => {
+      delete envData[env];
+    });
+  }
+
+  return Object.keys(envData);
+}
+
+/**
+ *
  * @param {RestFile} restfile Target RestFile to parse secrets from
  * @param {Record<string, any>} secrets Object with secret values to map from
  * @returns Object with parsed secrets

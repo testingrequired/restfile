@@ -54,7 +54,7 @@ import yargs from "yargs";
           return;
         }
 
-        const errors = validate(restfile, argv.env);
+        const errors = validate(restfile);
 
         if (errors.length > 0) {
           console.log(
@@ -110,11 +110,15 @@ import yargs from "yargs";
           return;
         }
 
-        const parsedRestfile = parse(restfile, argv.env, {
-          secretToken: "secretToken",
-        });
+        const errors = validate(restfile);
 
-        const [collection] = parsedRestfile;
+        if (errors.length > 0) {
+          console.log(
+            `Invalid restfile:\n\n${JSON.stringify(errors, null, 2)}`
+          );
+        }
+
+        const [collection] = restfile;
 
         if (!collection.envs) {
           console.log("Restfile does not define envs");
@@ -168,7 +172,7 @@ import yargs from "yargs";
           return;
         }
 
-        const errors = validate(restfile, argv.env);
+        const errors = validate(restfile);
 
         if (errors.length > 0) {
           console.log(
@@ -255,19 +259,12 @@ import yargs from "yargs";
       "validate",
       "Validate a restfile",
       (yargs) =>
-        yargs
-          .option("filePath", {
-            alias: "f",
-            demandOption: true,
-            description: "Path to restfile to load",
-            type: "string",
-          })
-          .option("env", {
-            alias: "e",
-            type: "string",
-            describe: "Environment to load data for",
-            demandOption: true,
-          }),
+        yargs.option("filePath", {
+          alias: "f",
+          demandOption: true,
+          description: "Path to restfile to load",
+          type: "string",
+        }),
       async (argv) => {
         if (!argv.filePath) {
           console.log("No restfile specified");
@@ -285,7 +282,7 @@ import yargs from "yargs";
           return;
         }
 
-        const errors = validate(restfile, argv.env);
+        const errors = validate(restfile);
 
         if (errors.length > 0) {
           console.log(
