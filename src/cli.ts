@@ -15,17 +15,17 @@ import yargs from "yargs";
     .scriptName("restfile")
     .env("RESTFILE")
     .usage("$0 -f filePath -e env <command> [args]")
-    .option("filePath", {
-      alias: "f",
-      demandOption: true,
-      description: "Path to restfile to load",
-      type: "string",
-    })
     .command(
       "show <requestId>",
       "Show information about a request",
       (yargs) =>
         yargs
+          .option("filePath", {
+            alias: "f",
+            demandOption: true,
+            description: "Path to restfile to load",
+            type: "string",
+          })
           .option("env", {
             alias: "e",
             type: "string",
@@ -91,7 +91,13 @@ import yargs from "yargs";
     .command(
       "envs",
       "Show list of envs defined in restfile",
-      () => {},
+      (yargs) =>
+        yargs.option("filePath", {
+          alias: "f",
+          demandOption: true,
+          description: "Path to restfile to load",
+          type: "string",
+        }),
       async (argv) => {
         let restfile: RestFile;
 
@@ -123,6 +129,12 @@ import yargs from "yargs";
       "Execute a request",
       (yargs) =>
         yargs
+          .option("filePath", {
+            alias: "f",
+            demandOption: true,
+            description: "Path to restfile to load",
+            type: "string",
+          })
           .option("env", {
             alias: "e",
             type: "string",
@@ -243,12 +255,19 @@ import yargs from "yargs";
       "validate",
       "Validate a restfile",
       (yargs) =>
-        yargs.option("env", {
-          alias: "e",
-          type: "string",
-          describe: "Environment to load data for",
-          demandOption: true,
-        }),
+        yargs
+          .option("filePath", {
+            alias: "f",
+            demandOption: true,
+            description: "Path to restfile to load",
+            type: "string",
+          })
+          .option("env", {
+            alias: "e",
+            type: "string",
+            describe: "Environment to load data for",
+            demandOption: true,
+          }),
       async (argv) => {
         if (!argv.filePath) {
           console.log("No restfile specified");
@@ -275,6 +294,25 @@ import yargs from "yargs";
         } else {
           console.log("Valid restfile!");
         }
+      }
+    )
+    .command(
+      "init",
+      "Generate empty restfile",
+      () => {},
+      () => {
+        console.log(
+          [
+            "name: Generated",
+            "description: A generated empty but valid restfile",
+            "envs: []",
+            "---",
+            "",
+            "---",
+            "",
+            "",
+          ].join("\n")
+        );
       }
     )
     .demandCommand()
