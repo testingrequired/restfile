@@ -11,27 +11,15 @@ import { mapBodyForFetch, mapHeadersForFetch } from "./execute";
 import yargs from "yargs";
 
 (async () => {
-  const [_, __, restfilePath] = process.argv;
-
-  if (!restfilePath) {
-    console.log("No restfile specified");
-    return;
-  }
-
-  let restfile: RestFile;
-
-  try {
-    restfile = await asyncLoadAll(
-      await fs.readFile(path.join(process.cwd(), restfilePath), "utf-8")
-    );
-  } catch (e) {
-    console.log(`Error reading ${restfilePath}: ${e.message}`);
-    return;
-  }
-
-  const args = yargs(process.argv.slice(3))
+  const args = yargs(process.argv.slice(2))
     .scriptName("restfile")
     .usage("$0 <command> [args]")
+    .option("filePath", {
+      alias: "f",
+      demandOption: true,
+      description: "Path to restfile to load",
+      type: "string",
+    })
     .option("env", {
       alias: "e",
       type: "string",
@@ -39,11 +27,31 @@ import yargs from "yargs";
       demandOption: true,
     })
     .command(
-      "show [requestId]",
+      "show <requestId>",
       "Show information about a request",
       (yargs) =>
-        yargs.positional("requestId", { type: "string", demandOption: true }),
-      (argv) => {
+        yargs.positional("requestId", {
+          type: "string",
+          demandOption: true,
+          description: "Which request to show",
+        }),
+      async (argv) => {
+        if (!argv.filePath) {
+          console.log("No restfile specified");
+          return;
+        }
+
+        let restfile: RestFile;
+
+        try {
+          restfile = await asyncLoadAll(
+            await fs.readFile(path.join(process.cwd(), argv.filePath), "utf-8")
+          );
+        } catch (e) {
+          console.log(`Error reading ${argv.filePath}: ${e.message}`);
+          return;
+        }
+
         const errors = validate(restfile, argv.env);
 
         if (errors.length > 0) {
@@ -79,19 +87,36 @@ import yargs from "yargs";
       }
     )
     .command(
-      "execute [requestId] [promptsJson]",
+      "execute <requestId> [promptsJson]",
       "Execute a request",
       (yargs) =>
         yargs
           .positional("requestId", {
             type: "string",
             demandOption: true,
+            description: "Which request to show",
           })
           .positional("promptsJson", {
             default: "{}",
             type: "string",
           }),
       async (argv) => {
+        if (!argv.filePath) {
+          console.log("No restfile specified");
+          return;
+        }
+
+        let restfile: RestFile;
+
+        try {
+          restfile = await asyncLoadAll(
+            await fs.readFile(path.join(process.cwd(), argv.filePath), "utf-8")
+          );
+        } catch (e) {
+          console.log(`Error reading ${argv.filePath}: ${e.message}`);
+          return;
+        }
+
         const errors = validate(restfile, argv.env);
 
         if (errors.length > 0) {
@@ -179,7 +204,23 @@ import yargs from "yargs";
       "validate",
       "Validate a restfile",
       () => {},
-      (argv) => {
+      async (argv) => {
+        if (!argv.filePath) {
+          console.log("No restfile specified");
+          return;
+        }
+
+        let restfile: RestFile;
+
+        try {
+          restfile = await asyncLoadAll(
+            await fs.readFile(path.join(process.cwd(), argv.filePath), "utf-8")
+          );
+        } catch (e) {
+          console.log(`Error reading ${argv.filePath}: ${e.message}`);
+          return;
+        }
+
         const errors = validate(restfile, argv.env);
 
         if (errors.length > 0) {
@@ -191,5 +232,6 @@ import yargs from "yargs";
         }
       }
     )
+    .demandCommand()
     .help().argv;
 })();
