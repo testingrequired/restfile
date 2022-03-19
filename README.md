@@ -119,3 +119,9 @@ Response: 200
 Body:
 [{"organization_name":"GOOGLE","accuracy":1000,"asn":15169,"organization":"AS15169 GOOGLE","timezone":"America\/Chicago","longitude":"-97.822","country_code3":"USA","area_code":"0","ip":"8.8.8.8","country":"United States","continent_code":"NA","country_code":"US","latitude":"37.751"}]
 ```
+
+#### Environment Variables
+
+```bash
+$ RESTFILE_FILE_PATH=".\example.restfile.yml" RESTFILE_ENV="prod" restfile show ip
+```

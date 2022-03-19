@@ -13,6 +13,7 @@ import yargs from "yargs";
 (async () => {
   yargs(process.argv.slice(2))
     .scriptName("restfile")
+    .env("RESTFILE")
     .usage("$0 -f filePath -e env <command> [args]")
     .option("filePath", {
       alias: "f",
