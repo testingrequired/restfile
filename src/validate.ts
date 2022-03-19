@@ -29,7 +29,10 @@ function validateUniqueRequestIds(restfile: RestFile): ValidationError[] {
   const [_, __, ...requests] = restfile;
   const errors: ValidationError[] = [];
 
-  const ids = requests.map((r) => r.id).sort();
+  const ids = requests
+    .filter((x) => x)
+    .map((r) => r.id)
+    .sort();
 
   let duplicates = [];
 
@@ -57,7 +60,7 @@ function validateAllRequestTemplateReferences(
 
   const dataKeys = parseDataKeys(restfile);
 
-  for (const request of requests) {
+  for (const request of requests.filter((x) => x)) {
     for (const match of request.http.matchAll(varTemplatePattern)) {
       if (dataKeys.includes(match[1])) continue;
 
@@ -318,7 +321,7 @@ function validateRequestPrompts(restfile: RestFile): ValidationError[] {
 
   const errors: ValidationError[] = [];
 
-  for (const request of requests) {
+  for (const request of requests.filter((x) => x)) {
     if (typeof request.prompts === "undefined") {
       continue;
     }

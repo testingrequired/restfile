@@ -65,10 +65,11 @@ export function parseData(
  * @returns Array of data keys
  */
 export function parseDataKeys(restfile: RestFile): string[] {
-  const [collection, data, __] = restfile;
+  const [collection] = restfile;
+  let [_, data] = restfile;
 
   if (data === null) {
-    restfile[1] = {};
+    data = restfile[1] = {};
   }
 
   const envData = {};
