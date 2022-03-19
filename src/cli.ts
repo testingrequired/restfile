@@ -263,19 +263,45 @@ import { List, Select, Form, FormPromptOptions } from "enquirer/lib/prompts";
 
           const httpObj = parseHttp(request.http);
 
-          const url = httpObj.target;
-
-          console.log(`Fetching: ${url}`);
-
-          const response = await fetch(url, {
+          const response = await fetch(httpObj.target, {
             method: httpObj.method,
             body: mapBodyForFetch(httpObj),
             headers: mapHeadersForFetch(httpObj),
           });
 
-          console.log(`Response: ${response.status}`);
+          const responseBody = await response.text();
 
-          const body = await response.text();
+          const headers: HttpZHeader[] = [];
+
+          for (const [name, value] of response.headers.entries()) {
+            headers.push({ name, value });
+          }
+
+          const body = await (async () => {
+            const body: HttpZBody = {
+              contentType: response.headers.get("content-type"),
+              text: responseBody,
+              boundary: "",
+              params: [],
+            };
+
+            return body;
+          })();
+
+          const httpModel: HttpZResponseModel = {
+            protocolVersion: "HTTP/1.1",
+            statusCode: response.status,
+            statusMessage: response.statusText,
+            body,
+            headers,
+            headersSize: new TextEncoder().encode(JSON.stringify(headers))
+              .length,
+            bodySize: new TextEncoder().encode(responseBody).length,
+          };
+
+          const httpString = build(httpModel);
+
+          console.log(httpString);
 
           console.log(`Body:\n${body}`);
         } else {
