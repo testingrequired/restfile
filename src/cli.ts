@@ -9,7 +9,7 @@ import { asyncLoadAll } from "./yaml";
 import fetch from "node-fetch";
 import { mapBodyForFetch, mapHeadersForFetch } from "./execute";
 import yargs from "yargs";
-import { Select, Form, FormPromptOptions } from "enquirer/lib/prompts";
+import { List, Select, Form, FormPromptOptions } from "enquirer/lib/prompts";
 
 (async () => {
   yargs(process.argv.slice(2))
@@ -317,22 +317,65 @@ import { Select, Form, FormPromptOptions } from "enquirer/lib/prompts";
       }
     )
     .command(
-      "init",
+      "init <newFilePath>",
       "Generate empty restfile",
-      () => {},
-      () => {
-        console.log(
-          [
-            "name: Generated",
-            "description: A generated empty but valid restfile",
-            "envs: []",
-            "---",
-            "",
-            "---",
-            "",
-            "",
-          ].join("\n")
-        );
+      (yargs) =>
+        yargs.positional("newFilePath", {
+          type: "string",
+          description: "Path to save new restfile to",
+        }),
+      async (argv) => {
+        const documentDataForm = new Form({
+          name: "document",
+          message: "Please provide the following information:",
+          choices: [
+            { name: "name", message: "Name" },
+            { name: "description", message: "Description (Optional)" },
+          ],
+        });
+
+        const documentData = await documentDataForm.run();
+
+        // envs
+
+        const envDataList = new List({
+          name: "envs",
+          message: "Type comma-separated env names",
+        });
+
+        const envData = await envDataList.run();
+
+        // vars
+
+        // secrets
+
+        // requests?
+
+        // id
+        // description
+        // http
+
+        const fileContent = [
+          `name: ${documentData.name}`,
+          ...(documentData.description
+            ? [`description: ${documentData.description}`]
+            : []),
+          `envs: [${envData.join(", ")}]`,
+          "---",
+          "",
+          "---",
+          "",
+          "",
+        ].join("\n");
+
+        try {
+          await fs.writeFile(argv.newFilePath, fileContent);
+          console.log(`Initialized new restfile: ${argv.newFilePath}`);
+        } catch (e) {
+          console.log(
+            `Error inititalizing new restfile: ${argv.newFilePath}\n\n ${e.message}`
+          );
+        }
       }
     )
     .demandCommand()
