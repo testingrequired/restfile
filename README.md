@@ -26,6 +26,8 @@ See [spec](SPEC.md) for more information on the format.
 
 There is a very basic CLI to view and execute requests.
 
+![restfile-init](https://user-images.githubusercontent.com/728215/159113248-f365c185-76c8-44b4-ae77-5aca955e31ae.gif)
+
 ### example.restfile.yml
 
 <!-- prettier-ignore -->
