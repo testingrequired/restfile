@@ -60,6 +60,24 @@ http: |+
 
 ### Usage
 
+Generated from the CLI help:
+
+```
+restfile -f filePath -e env <command> [args]
+
+Commands:
+  restfile show <requestId>                 Show information about a request
+  restfile execute <requestId>              Execute a request
+  [promptsJson]
+  restfile validate                         Validate a restfile
+
+Options:
+      --version   Show version number                                  [boolean]
+  -f, --filePath  Path to restfile to load                   [string] [required]
+  -e, --env       Environment to load data for               [string] [required]
+      --help      Show help                                            [boolean]
+```
+
 #### Show
 
 ```bash
