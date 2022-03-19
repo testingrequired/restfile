@@ -2,7 +2,7 @@
 
 [![restfile](https://github.com/testingrequired/restfile-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/testingrequired/restfile-ts/actions/workflows/ci.yml)
 
-Define collections of REST requests in a deterministic file format.
+REST request collections in a deterministic human readable/writable file format.
 
 ## Goals
 
