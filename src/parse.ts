@@ -232,9 +232,11 @@ export function parse(
   const envData = parseData(input, env);
   const secretData = parseSecrets(input, secrets);
 
-  const outputRequests = inputRequests.map((x) => {
-    return mapTemplateValuesInRequest(envData, secretData, prompts)(x);
-  });
+  const outputRequests = inputRequests
+    .filter((x) => x)
+    .map((x) => {
+      return mapTemplateValuesInRequest(envData, secretData, prompts)(x);
+    });
 
   const output: RestFile = [inputCollection, inputData, ...outputRequests];
 

@@ -69,6 +69,11 @@ import { List, Select, Form, FormPromptOptions } from "enquirer/lib/prompts";
 
         const requestIds = requests.map((r) => r.id);
 
+        if (requestIds.length === 0) {
+          console.log("No requests defined");
+          return;
+        }
+
         let requestId = argv.requestId;
 
         if (!requestId) {
@@ -194,6 +199,11 @@ import { List, Select, Form, FormPromptOptions } from "enquirer/lib/prompts";
         const [_, __, ...requests_] = parsedRestfile;
 
         const requestIds = requests_.map((r) => r.id);
+
+        if (requestIds.length === 0) {
+          console.log("No requests defined");
+          return;
+        }
 
         let requestId = argv.requestId;
 
