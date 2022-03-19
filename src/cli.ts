@@ -20,21 +20,22 @@ import yargs from "yargs";
       description: "Path to restfile to load",
       type: "string",
     })
-    .option("env", {
-      alias: "e",
-      type: "string",
-      describe: "Environment to load data for",
-      demandOption: true,
-    })
     .command(
       "show <requestId>",
       "Show information about a request",
       (yargs) =>
-        yargs.positional("requestId", {
-          type: "string",
-          demandOption: true,
-          description: "Which request to show",
-        }),
+        yargs
+          .option("env", {
+            alias: "e",
+            type: "string",
+            describe: "Environment to load data for",
+            demandOption: true,
+          })
+          .positional("requestId", {
+            type: "string",
+            demandOption: true,
+            description: "Which request to show",
+          }),
       async (argv) => {
         if (!argv.filePath) {
           console.log("No restfile specified");
@@ -87,10 +88,46 @@ import yargs from "yargs";
       }
     )
     .command(
+      "envs",
+      "Show list of envs defined in restfile",
+      () => {},
+      async (argv) => {
+        let restfile: RestFile;
+
+        try {
+          restfile = await asyncLoadAll(
+            await fs.readFile(path.join(process.cwd(), argv.filePath), "utf-8")
+          );
+        } catch (e) {
+          console.log(`Error reading ${argv.filePath}: ${e.message}`);
+          return;
+        }
+
+        const parsedRestfile = parse(restfile, argv.env, {
+          secretToken: "secretToken",
+        });
+
+        const [collection] = parsedRestfile;
+
+        if (!collection.envs) {
+          console.log("Restfile does not define envs");
+          return;
+        }
+
+        console.log(collection.envs.join(", "));
+      }
+    )
+    .command(
       "execute <requestId> [promptsJson]",
       "Execute a request",
       (yargs) =>
         yargs
+          .option("env", {
+            alias: "e",
+            type: "string",
+            describe: "Environment to load data for",
+            demandOption: true,
+          })
           .positional("requestId", {
             type: "string",
             demandOption: true,
@@ -204,7 +241,13 @@ import yargs from "yargs";
     .command(
       "validate",
       "Validate a restfile",
-      () => {},
+      (yargs) =>
+        yargs.option("env", {
+          alias: "e",
+          type: "string",
+          describe: "Environment to load data for",
+          demandOption: true,
+        }),
       async (argv) => {
         if (!argv.filePath) {
           console.log("No restfile specified");
