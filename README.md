@@ -58,7 +58,7 @@ http: |+
 
 1. Clone down this repo. This package isn't published at this time.
 2. Run `npm ci`
-3. Run `npm run global_install`
+3. Run `npm run global-install`
 
 ### Usage
 
