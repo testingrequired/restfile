@@ -16,7 +16,8 @@
     "precli": "npm run build",
     "cli": "node dist/cli.js",
     "test": "jest",
-    "coverage": "npm test -- --coverage --collectCoverageFrom=\"./src/**\""
+    "coverage": "npm test -- --coverage --collectCoverageFrom=\"./src/**\"",
+    "global-install": "npm run build && npm pack && npm -g i testingrequired-restfile-1.0.0.tgz"
   },
   "author": "Kylee Tilley",
   "license": "MIT",
