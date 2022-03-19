@@ -9,6 +9,8 @@ import { asyncLoadAll } from "./yaml";
 import fetch from "node-fetch";
 import { mapBodyForFetch, mapHeadersForFetch } from "./execute";
 import yargs from "yargs";
+import { Select, PromptOptions } from "enquirer/lib/prompts";
+import { prompt } from "enquirer";
 
 (async () => {
   yargs(process.argv.slice(2))
@@ -16,7 +18,7 @@ import yargs from "yargs";
     .env("RESTFILE")
     .usage("$0 -f filePath -e env <command> [args]")
     .command(
-      "show <requestId>",
+      "show [requestId]",
       "Show information about a request",
       (yargs) =>
         yargs
@@ -34,7 +36,6 @@ import yargs from "yargs";
           })
           .positional("requestId", {
             type: "string",
-            demandOption: true,
             description: "Which request to show",
           }),
       async (argv) => {
@@ -69,19 +70,26 @@ import yargs from "yargs";
 
         const requestIds = requests.map((r) => r.id);
 
-        if (!argv.requestId) {
-          console.log(`Available Requests:\n\n${requestIds.join("\n")}`);
-          return;
+        let requestId = argv.requestId;
+
+        if (!requestId) {
+          const prompt = new Select({
+            name: "request",
+            message: "Select A Request",
+            choices: requestIds,
+          });
+
+          requestId = await prompt.run();
         }
 
-        const request = requests.find((r) => r.id === argv.requestId);
+        const request = requests.find((r) => r.id === requestId);
 
         if (request) {
           console.log(request.http);
         } else {
           console.log(
             [
-              `Request not found: ${argv.requestId}`,
+              `Request not found: ${requestId}`,
               `Available Requests:\n\n${requestIds.join("\n")}`,
             ].join("\n")
           );
@@ -129,7 +137,7 @@ import yargs from "yargs";
       }
     )
     .command(
-      "execute <requestId> [promptsJson]",
+      "execute [requestId] [promptsJson]",
       "Execute a request",
       (yargs) =>
         yargs
@@ -187,31 +195,42 @@ import yargs from "yargs";
         const [_, __, ...requests_] = parsedRestfile;
 
         const requestIds = requests_.map((r) => r.id);
-        const availableRequestIds = requestIds.join(", ");
 
-        if (!argv.requestId) {
-          console.log(`Available Requests:\n\n${availableRequestIds}`);
-          return;
+        let requestId = argv.requestId;
+
+        if (!requestId) {
+          const prompt = new Select({
+            name: "request",
+            message: "Select A Request",
+            choices: requestIds,
+          });
+
+          requestId = await prompt.run();
         }
 
-        if (!requestIds.includes(argv.requestId)) {
-          console.log(
-            `No request with an id of "${argv.requestId}". Please selected one of the following: ${availableRequestIds}`
-          );
-          return;
-        }
-
-        let request = requests_.find((r) => r.id === argv.requestId);
+        let request = requests_.find((r) => r.id === requestId);
 
         if (request.prompts) {
-          let prompts;
+          let prompts: PromptOptions[] = [];
 
-          try {
-            prompts = JSON.parse(argv.promptsJson);
-          } catch (e) {
-            console.log(`Invalid prompts JSON string: ${e.message}`);
-            return;
+          for (const [key, value] of Object.entries(request.prompts)) {
+            const prompt: PromptOptions = {
+              type: "input",
+              name: key,
+              message: key,
+            };
+
+            if (
+              typeof value === "object" &&
+              typeof value.default != "undefined"
+            ) {
+              prompt.initial = value.default;
+            }
+
+            prompts.push(prompt);
           }
+
+          let promptData = await prompt<Record<string, string>>(prompts);
 
           const [_, __, ...requests] = parse(
             restfile,
@@ -219,10 +238,10 @@ import yargs from "yargs";
             {
               secretToken: "secretToken",
             },
-            prompts
+            promptData
           );
 
-          request = requests.find((r) => r.id === argv.requestId);
+          request = requests.find((r) => r.id === requestId);
         }
 
         if (request) {
@@ -248,7 +267,7 @@ import yargs from "yargs";
         } else {
           console.log(
             [
-              `Request not found: ${argv.requestId}`,
+              `Request not found: ${requestId}`,
               `Available Requests:\n\n${requestIds.join("\n")}`,
             ].join("\n")
           );

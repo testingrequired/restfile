@@ -33,6 +33,7 @@
     "typescript": "^4.6.2"
   },
   "dependencies": {
+    "enquirer": "^2.3.6",
     "http-z": "^6.1.2",
     "js-yaml": "^4.1.0",
     "node-fetch": "^2.6.7",

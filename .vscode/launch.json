@@ -9,14 +9,13 @@
             "name": "cli",
             "type": "node",
             "env": {
-                "NODE_ENV": "localhost"
+                "RESTFILE_FILE_PATH": "./example.restfile.yml",
+                "RESTFILE_ENV": "prod"
             },
             "request": "launch",
             "args": [
                 "./src/cli.ts",
-                "webhook.restfile.yml",
-                "execute",
-                "form"
+                "show"
             ],
             "runtimeArgs": [
                 "-r",
