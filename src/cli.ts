@@ -11,9 +11,9 @@ import { mapBodyForFetch, mapHeadersForFetch } from "./execute";
 import yargs from "yargs";
 
 (async () => {
-  const args = yargs(process.argv.slice(2))
+  yargs(process.argv.slice(2))
     .scriptName("restfile")
-    .usage("$0 <command> [args]")
+    .usage("$0 -f filePath -e env <command> [args]")
     .option("filePath", {
       alias: "f",
       demandOption: true,
@@ -99,6 +99,7 @@ import yargs from "yargs";
           .positional("promptsJson", {
             default: "{}",
             type: "string",
+            description: "The prompts answers in the form of a JSON string",
           }),
       async (argv) => {
         if (!argv.filePath) {
