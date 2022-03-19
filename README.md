@@ -52,12 +52,18 @@ http: |+
 
 ```
 
+### Installation
+
+1. Clone down this repo. This package isn't published at this time.
+2. Run `npm ci`
+3. Run `npm run build && npm pack && npm -g i ./testingrequired-restfile-1.0.0.tgz`
+
 ### Usage
 
 #### Show
 
 ```bash
-$ NODE_ENV=prod npm run cli -- example.restfile.yml show geo
+$ restfile -f example.restfile.yml -e prod show geo
 ```
 
 ```
@@ -67,7 +73,7 @@ GET https://get.geojs.io/v1/ip/geo.json?ip={{? ipaddr}} HTTP/1.1
 #### Execute
 
 ```bash
-$ NODE_ENV=prod npm run cli -- example.restfile.yml execute geo '{\"ipaddr\":\"1.1.1.1\"}'
+$ restfile -f example.restfile.yml -e prod execute geo '{\"ipaddr\":\"1.1.1.1\"}'
 ```
 
 ```
@@ -83,7 +89,7 @@ Body:
 ##### With Default Prompt Values
 
 ```bash
-$ NODE_ENV=prod npm run cli -- example.restfile.yml execute geo
+$ restfile -f example.restfile.yml -e prod execute geo
 ```
 
 ```
