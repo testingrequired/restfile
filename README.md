@@ -58,7 +58,7 @@ http: |+
 
 1. Clone down this repo. This package isn't published at this time.
 2. Run `npm ci`
-3. Run `npm run build && npm pack && npm -g i ./testingrequired-restfile-1.0.0.tgz`
+3. Run `npm run global_install`
 
 ### Usage
 
@@ -93,7 +93,8 @@ GET https://get.geojs.io/v1/ip/geo.json?ip={{? ipaddr}} HTTP/1.1
 #### Execute
 
 ```bash
-$ restfile -f example.restfile.yml -e prod execute geo '{\"ipaddr\":\"1.1.1.1\"}'
+$ restfile -f example.restfile.yml -e prod execute geo
+# Fill In Request Prompts...
 ```
 
 ```
