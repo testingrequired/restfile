@@ -1,7 +1,7 @@
 {
   "name": "@testingrequired/restfile",
   "version": "1.0.0",
-  "description": "",
+  "description": "REST request collections in a deterministic human readable/writable file format.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -18,8 +18,8 @@
     "test": "jest",
     "coverage": "npm test -- --coverage --collectCoverageFrom=\"./src/**\""
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Kylee Tilley",
+  "license": "MIT",
   "devDependencies": {
     "@types/jest": "^27.4.1",
     "@types/js-yaml": "^4.0.5",
