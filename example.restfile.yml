@@ -17,3 +17,11 @@ prompts:
 http: |+
   GET {{$ baseUrl}}/ip/geo.json?ip={{? ipaddr}} HTTP/1.1
 
+tests:
+  shouldBeOk: |+
+    HTTP/1.1 200 OK
+    Access-Control-Allow-Methods: GET
+    Access-Control-Allow-Origin: *
+    Content-Type: application/json
+
+    [{"organization":"AS15169 GOOGLE","organization_name":"GOOGLE","asn":15169,"area_code":"0","country_code":"US","country_code3":"USA","continent_code":"NA","ip":"8.8.8.8","latitude":"37.751","longitude":"-97.822","accuracy":1000,"country":"United States","timezone":"America\/Chicago"}]

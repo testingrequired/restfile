@@ -14,6 +14,7 @@ export interface Request {
   headers?: Record<string, string>;
   body?: Record<string, any> | string;
   http: string;
+  tests?: Record<string, string>;
 }
 
 export interface RequestPrompt {

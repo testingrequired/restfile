@@ -1,5 +1,5 @@
 import { RestFile, Request, RequestPrompt } from "./types";
-import httpz, { HttpZRequestModel } from "http-z";
+import httpz, { HttpZRequestModel, HttpZResponseModel } from "http-z";
 
 export const varGlyph = "$";
 export const secretGlyph = "!";
@@ -131,7 +131,7 @@ const mapTemplateValuesInRequest =
 
     // Add headers from the request to http
     if (outputRequest.headers) {
-      const http = parseHttp(outputRequest.http);
+      const http = parseHttp<HttpZRequestModel>(outputRequest.http);
 
       Object.entries(outputRequest.headers).forEach(([key, value]) => {
         http.headers.push({
@@ -145,7 +145,7 @@ const mapTemplateValuesInRequest =
 
     // Add body from the request to http
     if (outputRequest.body) {
-      const http = parseHttp(outputRequest.http);
+      const http = parseHttp<HttpZRequestModel>(outputRequest.http);
 
       if (!http.body) {
         http.body = {
@@ -214,7 +214,7 @@ const mapTemplateValuesInRequest =
       debugger;
 
       // Run all requests through http parser to standardize
-      const http = parseHttp(outputRequest.http);
+      const http = parseHttp<HttpZRequestModel>(outputRequest.http);
       outputRequest.http = buildHttp(http);
     }
 
@@ -243,9 +243,11 @@ export function parse(
   return output;
 }
 
-export function parseHttp(inputHttp: string): HttpZRequestModel {
+export function parseHttp<T extends HttpZRequestModel | HttpZResponseModel>(
+  inputHttp: string
+): T {
   try {
-    return httpz.parse(inputHttp.split("\n").join("\r\n")) as HttpZRequestModel;
+    return httpz.parse(inputHttp.split("\n").join("\r\n")) as T;
   } catch (e) {
     console.log(
       `There was an unexpected error parsing HTTP message: ${e.message}\n\n${inputHttp}`
@@ -255,7 +257,9 @@ export function parseHttp(inputHttp: string): HttpZRequestModel {
   }
 }
 
-function buildHttp(inputHttp: HttpZRequestModel): string {
+export function buildHttp<T extends HttpZRequestModel | HttpZResponseModel>(
+  inputHttp: T
+): string {
   try {
     return httpz.build(inputHttp).split("\r\n").join("\n");
   } catch (e) {

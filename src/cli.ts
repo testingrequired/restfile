@@ -2,7 +2,7 @@
 
 import * as fs from "fs/promises";
 import * as path from "path";
-import { parse, parseHttp } from "./parse";
+import { buildHttp, parse, parseHttp } from "./parse";
 import { RestFile } from "./types";
 import { validate } from "./validate";
 import { asyncLoadAll } from "./yaml";
@@ -10,6 +10,14 @@ import fetch from "node-fetch";
 import { mapBodyForFetch, mapHeadersForFetch } from "./execute";
 import yargs from "yargs";
 import { List, Select, Form, FormPromptOptions } from "enquirer/lib/prompts";
+import {
+  HttpZBody,
+  build,
+  HttpZResponseModel,
+  HttpZHeader,
+  HttpZRequestModel,
+} from "http-z";
+import expect from "expect";
 
 (async () => {
   yargs(process.argv.slice(2))
@@ -157,6 +165,12 @@ import { List, Select, Form, FormPromptOptions } from "enquirer/lib/prompts";
             describe: "Environment to load data for",
             demandOption: true,
           })
+          .option("test", {
+            alias: "t",
+            type: "boolean",
+            describe: "Runs tests",
+            default: false,
+          })
           .positional("requestId", {
             type: "string",
             demandOption: true,
@@ -261,7 +275,7 @@ import { List, Select, Form, FormPromptOptions } from "enquirer/lib/prompts";
         if (request) {
           console.log(request.http);
 
-          const httpObj = parseHttp(request.http);
+          const httpObj = parseHttp<HttpZRequestModel>(request.http);
 
           const response = await fetch(httpObj.target, {
             method: httpObj.method,
@@ -288,7 +302,7 @@ import { List, Select, Form, FormPromptOptions } from "enquirer/lib/prompts";
             return body;
           })();
 
-          const httpModel: HttpZResponseModel = {
+          let httpModel: HttpZResponseModel = {
             protocolVersion: "HTTP/1.1",
             statusCode: response.status,
             statusMessage: response.statusText,
@@ -299,11 +313,46 @@ import { List, Select, Form, FormPromptOptions } from "enquirer/lib/prompts";
             bodySize: new TextEncoder().encode(responseBody).length,
           };
 
-          const httpString = build(httpModel);
+          const httpString = buildHttp<HttpZResponseModel>(httpModel);
 
           console.log(httpString);
 
-          console.log(`Body:\n${body}`);
+          if (argv.test) {
+            if (!request.tests) {
+              console.log("Request has no tests");
+            }
+
+            // Normalizes headers for easier comparison
+            httpModel = parseHttp<HttpZResponseModel>(httpString);
+
+            const testErrors: Record<string, Error> = {};
+
+            for (const [testId, testHttp] of Object.entries(request.tests)) {
+              const testHttpModel = parseHttp<HttpZResponseModel>(testHttp);
+
+              httpModel.headers = httpModel.headers.filter((httpHeader) => {
+                return testHttpModel.headers
+                  .map((x) => x.name)
+                  .includes(httpHeader.name);
+              });
+
+              try {
+                httpModel.headersSize = expect.any(Number) as any;
+                httpModel.bodySize = expect.any(Number) as any;
+                expect(testHttpModel).toMatchObject(httpModel as any);
+              } catch (e) {
+                testErrors[testId] = e;
+              }
+            }
+
+            if (Object.keys(testErrors).length > 0) {
+              console.log(
+                `Test Errors:\n\n${Object.entries(testErrors)
+                  .map(([testId, e]) => `${testId}: ${e.message}`)
+                  .join("\n")}`
+              );
+            }
+          }
         } else {
           console.log(
             [
