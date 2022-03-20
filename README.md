@@ -130,6 +130,8 @@ Content-Type: application/json
 $ restfile -f example.restfile.yml -e prod execute geo
 ```
 
+Output:
+
 ```
 GET https://get.geojs.io/v1/ip/geo.json?ip=8.8.8.8 HTTP/1.1
 
@@ -146,7 +148,6 @@ If a request has tests defined you can run those by including the `--test` or `-
 
 ```bash
 $ restfile -f example.restfile.yml -e prod execute geo --test
-# Fill In Request Prompts...
 ```
 
 #### Environment Variables
