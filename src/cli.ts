@@ -23,7 +23,7 @@ import expect from "expect";
   yargs(process.argv.slice(2))
     .scriptName("restfile")
     .env("RESTFILE")
-    .usage("$0 -f filePath -e env <command> [args]")
+    .usage("$0 <command> [args]")
     .command(
       "show [requestId]",
       "Show information about a request",
