@@ -3,30 +3,33 @@ export function sortObject(obj: object | unknown[]): object | unknown[] {
     return obj;
   }
 
-  let sortedObj: object | unknown[];
+  let sorted: object | unknown[];
 
   if (obj instanceof Array) {
-    sortedObj = obj.map((item) => sortObject(item as object | unknown[]));
+    sorted = obj.map((item) => sortObject(item as object | unknown[]));
   } else {
-    sortedObj = {};
-    var keys = Object.keys(obj);
-    // console.log(keys);
-    keys.sort(function (key1, key2) {
-      (key1 = key1.toLowerCase()), (key2 = key2.toLowerCase());
-      if (key1 < key2) return -1;
-      if (key1 > key2) return 1;
-      return 0;
+    const keys = Object.keys(obj).sort(function (key1, key2) {
+      switch (true) {
+        case key1.toLowerCase() < key2.toLowerCase():
+          return -1;
+
+        case key1.toLowerCase() > key2.toLowerCase():
+          return 1;
+
+        default:
+          return 0;
+      }
     });
 
-    for (var index in keys) {
-      var key = keys[index];
-      if (typeof obj[key] == "object") {
-        sortedObj[key] = sortObject(obj[key]);
-      } else {
-        sortedObj[key] = obj[key];
-      }
+    sorted = {};
+
+    for (const index in keys) {
+      const key = keys[index];
+
+      sorted[key] =
+        typeof obj[key] == "object" ? sortObject(obj[key]) : obj[key];
     }
   }
 
-  return sortedObj;
+  return sorted;
 }
