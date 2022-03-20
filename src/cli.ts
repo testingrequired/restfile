@@ -205,6 +205,8 @@ import { sortObject } from "./utils";
           console.log(
             `Invalid restfile:\n\n${JSON.stringify(errors, null, 2)}`
           );
+
+          return;
         }
 
         const parsedRestfile = parse(restfile, argv.env, {
