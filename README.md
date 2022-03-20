@@ -51,6 +51,14 @@ prompts:
 http: |+
   GET {{$ baseUrl}}/ip/geo.json?ip={{? ipaddr}} HTTP/1.1
 
+tests:
+  shouldBeOk: |+
+    HTTP/1.1 200 OK
+    Access-Control-Allow-Methods: GET
+    Access-Control-Allow-Origin: *
+    Content-Type: application/json
+
+    [{"organization":"AS15169 GOOGLE","organization_name":"GOOGLE","asn":15169,"area_code":"0","country_code":"US","country_code3":"USA","continent_code":"NA","ip":"8.8.8.8","latitude":"37.751","longitude":"-97.822","accuracy":1000,"country":"United States","timezone":"America\/Chicago"}]
 
 ```
 
@@ -65,19 +73,20 @@ http: |+
 Generated from the CLI help:
 
 ```
-restfile -f filePath -e env <command> [args]
+restfile <command> [args]
 
 Commands:
-  restfile show <requestId>                 Show information about a request
-  restfile execute <requestId>              Execute a request
+  restfile show [requestId]                 Show information about a request
+  restfile envs                             Show list of envs defined in
+                                            restfile
+  restfile execute [requestId]              Execute a request
   [promptsJson]
   restfile validate                         Validate a restfile
+  restfile init <newFilePath>               Generate empty restfile
 
 Options:
-      --version   Show version number                                  [boolean]
-  -f, --filePath  Path to restfile to load                   [string] [required]
-  -e, --env       Environment to load data for               [string] [required]
-      --help      Show help                                            [boolean]
+  --version  Show version number                                       [boolean]
+  --help     Show help                                                 [boolean]                                          [boolean]
 ```
 
 #### Show
@@ -95,16 +104,24 @@ GET https://get.geojs.io/v1/ip/geo.json?ip={{? ipaddr}} HTTP/1.1
 ```bash
 $ restfile -f example.restfile.yml -e prod execute geo
 # Fill In Request Prompts...
+# ipaddr: 1.1.1.1
 ```
+
+Output:
 
 ```
 GET https://get.geojs.io/v1/ip/geo.json?ip=1.1.1.1 HTTP/1.1
 
 
-Fetching: https://get.geojs.io/v1/ip/geo.json?ip=1.1.1.1
-Response: 200
-Body:
-[{"organization_name":"CLOUDFLARENET","accuracy":1000,"asn":13335,"organization":"AS13335 CLOUDFLARENET","timezone":"Australia\/Sydney","longitude":"143.2104","country_code3":"AUS","area_code":"0","ip":"1.1.1.1","country":"Australia","continent_code":"OC","country_code":"AU","latitude":"-33.494"}]
+HTTP/1.1 200 OK
+Access-Control-Allow-Methods: GET
+Access-Control-Allow-Origin: *
+Connection: close
+Content-Encoding: gzip
+Content-Type: application/json
+...
+
+[{"continent_code":"OC","latitude":"-33.494","accuracy":1000,"organization_name":"CLOUDFLARENET","ip":"1.1.1.1","longitude":"143.2104","organization":"AS13335 CLOUDFLARENET","timezone":"Australia\/Sydney","asn":13335,"area_code":"0","country":"Australia","country_code":"AU","country_code3":"AUS"}]
 ```
 
 ##### With Default Prompt Values
@@ -123,7 +140,18 @@ Body:
 [{"organization_name":"GOOGLE","accuracy":1000,"asn":15169,"organization":"AS15169 GOOGLE","timezone":"America\/Chicago","longitude":"-97.822","country_code3":"USA","area_code":"0","ip":"8.8.8.8","country":"United States","continent_code":"NA","country_code":"US","latitude":"37.751"}]
 ```
 
+##### Run Tests
+
+If a request has tests defined you can run those by including the `--test` or `-t` flag.
+
+```bash
+$ restfile -f example.restfile.yml -e prod execute geo --test
+# Fill In Request Prompts...
+```
+
 #### Environment Variables
+
+CLI arguments can be passed using environment variables with this naming syntax: `RESTFILE_ARG_NAME`
 
 ```bash
 $ RESTFILE_FILE_PATH=".\example.restfile.yml" RESTFILE_ENV="prod" restfile show ip
