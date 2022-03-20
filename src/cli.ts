@@ -341,7 +341,7 @@ import { sortObject } from "./utils";
                   .includes(httpHeader.name);
               });
 
-              if (httpModel.body.contentType === "application/json") {
+              if (httpModel.body?.contentType === "application/json") {
                 httpModel.body.text = JSON.stringify(
                   sortObject(JSON.parse(httpModel.body.text)),
                   null,
