@@ -18,6 +18,7 @@ import {
   HttpZRequestModel,
 } from "http-z";
 import expect from "expect";
+import { sortObject } from "./utils";
 
 (async () => {
   yargs(process.argv.slice(2))
@@ -320,6 +321,7 @@ import expect from "expect";
           if (argv.test) {
             if (!request.tests) {
               console.log("Request has no tests");
+              return;
             }
 
             // Normalizes headers for easier comparison
@@ -327,8 +329,11 @@ import expect from "expect";
 
             const testErrors: Record<string, Error> = {};
 
-            for (const [testId, testHttp] of Object.entries(request.tests)) {
-              const testHttpModel = parseHttp<HttpZResponseModel>(testHttp);
+            for (let [testId, testHttpString] of Object.entries(
+              request.tests
+            )) {
+              const testHttpModel =
+                parseHttp<HttpZResponseModel>(testHttpString);
 
               httpModel.headers = httpModel.headers.filter((httpHeader) => {
                 return testHttpModel.headers
@@ -336,10 +341,25 @@ import expect from "expect";
                   .includes(httpHeader.name);
               });
 
+              if (httpModel.body.contentType === "application/json") {
+                httpModel.body.text = JSON.stringify(
+                  sortObject(JSON.parse(httpModel.body.text)),
+                  null,
+                  2
+                );
+                testHttpModel.body.text = JSON.stringify(
+                  sortObject(JSON.parse(testHttpModel.body.text)),
+                  null,
+                  2
+                );
+
+                testHttpString = buildHttp<HttpZResponseModel>(testHttpModel);
+              }
+
+              const httpModelString = buildHttp<HttpZResponseModel>(httpModel);
+
               try {
-                httpModel.headersSize = expect.any(Number) as any;
-                httpModel.bodySize = expect.any(Number) as any;
-                expect(testHttpModel).toMatchObject(httpModel as any);
+                expect(httpModelString).toEqual(testHttpString);
               } catch (e) {
                 testErrors[testId] = e;
               }
@@ -421,24 +441,12 @@ import expect from "expect";
 
         const documentData = await documentDataForm.run();
 
-        // envs
-
         const envDataList = new List({
           name: "envs",
           message: "Type comma-separated env names",
         });
 
         const envData = await envDataList.run();
-
-        // vars
-
-        // secrets
-
-        // requests?
-
-        // id
-        // description
-        // http
 
         const fileContent = [
           `name: ${documentData.name}`,
