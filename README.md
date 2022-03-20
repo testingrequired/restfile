@@ -150,6 +150,8 @@ If a request has tests defined you can run those by including the `--test` or `-
 $ restfile -f example.restfile.yml -e prod execute geo --test
 ```
 
+The test will check the response message to the test message and report differences. It will only check headers defined in the test request. Future versions will do the same for the presence of the body.
+
 #### Environment Variables
 
 CLI arguments can be passed using environment variables with this naming syntax: `RESTFILE_ARG_NAME`
