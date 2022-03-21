@@ -37,6 +37,16 @@ http: |+
   Authorization: Bearer {{! secretToken}}
 
   {"date":"2020-01-02 11:00:46 +06:00","text":"{{? postText}}","tags":"{{? tags}}"}
+
+tests:
+  shouldBeOk: |+
+    HTTP/1.1 200 OK
+    content-type: application/json
+    x-resource-url: {{$ baseUrl}}/posts/1
+    x-token: {{! secretToken}}
+
+    {"date":"2020-01-02 11:00:46 +06:00","text":"{{? postText}}","tags":"{{? tags}}","url":"{{$ baseUrl}}/posts/1"}
+
 ---
 id: posts/getPostById
 description: Get blog post by id

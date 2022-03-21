@@ -30,7 +30,7 @@ prompts:
   postText: !!str
   tags:
     default: "defaultTag"
-http: |
+http: |+
   POST /posts HTTP/1.1
   Host: http://example.com
   Content-Type: application/json
@@ -38,6 +38,16 @@ http: |
   Authorization: Bearer expectedToken
 
   {"date":"2020-01-02 11:00:46 +06:00","text":"Hello World","tags":"defaultTag"}
+
+tests:
+  shouldBeOk: |+
+    HTTP/1.1 200 OK
+    content-type: application/json
+    x-resource-url: http://example.com/posts/1
+    x-token: expectedToken
+
+    {"date":"2020-01-02 11:00:46 +06:00","text":"Hello World","tags":"defaultTag","url":"http://example.com/posts/1"}
+
 ---
 id: posts/getPostById
 description: Get blog post by id

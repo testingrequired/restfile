@@ -166,17 +166,42 @@ const mapTemplateValuesInRequest =
     }
 
     // Replace template variables in request.http
-    for (const match of outputRequest.http.matchAll(varTemplatePattern)) {
-      outputRequest.http = outputRequest.http
-        .split(`{{${varGlyph} ${match[1]}}}`)
-        .join(env[match[1]]);
+    for (const [pattern, key] of outputRequest.http.matchAll(
+      varTemplatePattern
+    )) {
+      outputRequest.http = outputRequest.http.split(pattern).join(env[key]);
     }
 
     // Replace template secrets in request.http
-    for (const match of outputRequest.http.matchAll(secretTemplatePattern)) {
+    for (const [pattern, key] of outputRequest.http.matchAll(
+      secretTemplatePattern
+    )) {
       outputRequest.http = outputRequest.http
-        .split(`{{${secretGlyph} ${match[1]}}}`)
-        .join(secretData[match[1]]);
+        .split(pattern)
+        .join(secretData[key]);
+    }
+
+    if (outputRequest.tests) {
+      for (const testId of Object.keys(outputRequest.tests)) {
+        const test = outputRequest.tests[testId];
+
+        // Replace template variables in request.http
+        for (const [pattern, key] of test.matchAll(varTemplatePattern)) {
+          outputRequest.tests[testId] = outputRequest.tests[testId]
+            .split(pattern)
+            .join(env[key]);
+        }
+
+        for (const [pattern, key] of test.matchAll(secretTemplatePattern)) {
+          debugger;
+
+          outputRequest.tests[testId] = outputRequest.tests[testId]
+            .split(pattern)
+            .join(secretData[key]);
+
+          debugger;
+        }
+      }
     }
 
     if (prompts) {
@@ -189,12 +214,8 @@ const mapTemplateValuesInRequest =
           const promptKey = httpMatches[1];
           let value = prompts[promptKey];
 
-          debugger;
-
           if (!value) {
             const requestPrompt = outputRequest.prompts[promptKey];
-
-            debugger;
 
             switch (typeof requestPrompt) {
               case "string":
@@ -211,7 +232,38 @@ const mapTemplateValuesInRequest =
         }
       }
 
-      debugger;
+      // Replace template prompts in request.tests
+      if (outputRequest.tests) {
+        for (const testId of Object.keys(outputRequest.tests)) {
+          const test = outputRequest.tests[testId];
+
+          for (const matches of test.matchAll(promptTemplatePattern)) {
+            if (matches?.length > 1) {
+              const pattern = matches[0];
+              const promptKey = matches[1];
+              let value = prompts[promptKey];
+
+              if (!value) {
+                const requestPrompt = outputRequest.prompts[promptKey];
+
+                switch (typeof requestPrompt) {
+                  case "string":
+                    value = requestPrompt;
+                    break;
+
+                  default:
+                    value = requestPrompt.default;
+                    break;
+                }
+              }
+
+              outputRequest.tests[testId] = outputRequest.tests[testId]
+                .split(pattern)
+                .join(value);
+            }
+          }
+        }
+      }
 
       // Run all requests through http parser to standardize
       const http = parseHttp<HttpZRequestModel>(outputRequest.http);
