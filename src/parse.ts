@@ -94,6 +94,31 @@ export function parseDataKeys(restfile: RestFile): string[] {
 
 /**
  *
+ * @param {RestFile} restfile Target RestFile to parse data from
+ * @param {string} env Name of environment
+ * @returns Array of secret keys
+ */
+export function parseSecretKeys(restfile: RestFile): string[] {
+  let [_, data] = restfile;
+
+  if (data === null) {
+    data = restfile[1] = {};
+  }
+
+  const envData = {};
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (key.endsWith(secretGlyph)) {
+      envData[key] = value;
+      return;
+    }
+  });
+
+  return Object.keys(envData);
+}
+
+/**
+ *
  * @param {RestFile} restfile Target RestFile to parse secrets from
  * @param {Record<string, any>} secrets Object with secret values to map from
  * @returns Object with parsed secrets

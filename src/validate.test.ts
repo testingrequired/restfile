@@ -72,10 +72,13 @@ describe("validate", () => {
     restfile.push({
       id: "invalidRequest",
       headers: {
-        another: "{{$ alsoDoesntExist}}",
+        another: "{{$ doesntExist}}",
       },
-      body: "{{$ lastOneDoesntExist}} {{$ reallyLastOne}}",
+      body: "{{$ doesntExist}} {{$ doesntExist}}",
       http: `GET http://example.com/1\nCustom: {{$ doesntExist}}`,
+      tests: {
+        test: "{{$ doesntExist}}",
+      },
     });
 
     expect(validate(restfile)).toEqual([
@@ -85,15 +88,19 @@ describe("validate", () => {
       },
       {
         key: "requests.invalidRequest.headers.another",
-        message: "Reference to undefined variable: {{$ alsoDoesntExist}}",
+        message: "Reference to undefined variable: {{$ doesntExist}}",
       },
       {
         key: "requests.invalidRequest.body",
-        message: "Reference to undefined variable: {{$ lastOneDoesntExist}}",
+        message: "Reference to undefined variable: {{$ doesntExist}}",
       },
       {
         key: "requests.invalidRequest.body",
-        message: "Reference to undefined variable: {{$ reallyLastOne}}",
+        message: "Reference to undefined variable: {{$ doesntExist}}",
+      },
+      {
+        key: "requests.invalidRequest.tests.test",
+        message: "Reference to undefined variable: {{$ doesntExist}}",
       },
     ]);
   });
@@ -119,6 +126,31 @@ describe("validate", () => {
       {
         key: "data.testEnv.testSecret!",
         message: "Secrets can not be defined in env data",
+      },
+    ]);
+  });
+
+  it("should validate that all referenced secrets are defined", () => {
+    restfile.push({
+      id: "test",
+      prompts: {},
+      http: `GET http://example.com HTTP/1.1
+      
+      {{! a}}
+      `,
+      tests: {
+        test: `{{! b}}`,
+      },
+    });
+
+    expect(validate(restfile)).toEqual([
+      {
+        key: "requests.test.http",
+        message: "Reference to undefined secret: a",
+      },
+      {
+        key: "requests.test.tests.test",
+        message: "Reference to undefined secret: b",
       },
     ]);
   });
@@ -243,12 +275,19 @@ describe("validate", () => {
         
         {{? a}}
         `,
+        tests: {
+          test: `{{? b}}`,
+        },
       });
 
       expect(validate(restfile)).toEqual([
         {
           key: "requests.test.http",
           message: "Referencing undefined prompt: a",
+        },
+        {
+          key: "requests.test.tests.test",
+          message: "Referencing undefined prompt: b",
         },
       ]);
     });

@@ -3,6 +3,8 @@ import {
   secretGlyph,
   promptTemplatePattern,
   parseDataKeys,
+  secretTemplatePattern,
+  parseSecretKeys,
 } from "./parse";
 import { Collection, RestFile } from "./types";
 
@@ -59,6 +61,7 @@ function validateAllRequestTemplateReferences(
   const errors: ValidationError[] = [];
 
   const dataKeys = parseDataKeys(restfile);
+  const secretKeys = parseSecretKeys(restfile);
 
   for (const request of requests.filter((x) => x)) {
     for (const match of request.http.matchAll(varTemplatePattern)) {
@@ -94,6 +97,74 @@ function validateAllRequestTemplateReferences(
           key: `requests.${request.id}.body`,
           message: `Reference to undefined variable: ${match[0]}`,
         });
+      }
+    }
+
+    if (request.tests) {
+      for (const testId of Object.keys(request.tests)) {
+        for (const match of request.tests[testId]
+          .toString()
+          .matchAll(varTemplatePattern)) {
+          if (dataKeys.includes(match[1])) continue;
+
+          errors.push({
+            key: `requests.${request.id}.tests.${testId}`,
+            message: `Reference to undefined variable: ${match[0]}`,
+          });
+        }
+      }
+    }
+  }
+
+  for (const request of requests.filter((x) => x)) {
+    for (const match of request.http.matchAll(secretTemplatePattern)) {
+      if (secretKeys.includes(match[1] + "!")) continue;
+
+      errors.push({
+        key: `requests.${request.id}.http`,
+        message: `Reference to undefined secret: ${match[1]}`,
+      });
+    }
+
+    if (request.headers) {
+      for (const [key, value] of Object.entries(request.headers)) {
+        for (const match of value.matchAll(secretTemplatePattern)) {
+          if (secretKeys.includes(match[1] + "!")) continue;
+
+          errors.push({
+            key: `requests.${request.id}.headers.${key}`,
+            message: `Reference to undefined secret: ${match[1]}`,
+          });
+        }
+      }
+    }
+
+    if (request.body) {
+      // TODO: toString is a cheat here
+      for (const match of request.body
+        .toString()
+        .matchAll(secretTemplatePattern)) {
+        if (secretKeys.includes(match[1] + "!")) continue;
+
+        errors.push({
+          key: `requests.${request.id}.body`,
+          message: `Reference to undefined secret: ${match[1]}`,
+        });
+      }
+    }
+
+    if (request.tests) {
+      for (const testId of Object.keys(request.tests)) {
+        for (const match of request.tests[testId]
+          .toString()
+          .matchAll(secretTemplatePattern)) {
+          if (secretKeys.includes(match[1] + "!")) continue;
+
+          errors.push({
+            key: `requests.${request.id}.tests.${testId}`,
+            message: `Reference to undefined secret: ${match[1]}`,
+          });
+        }
       }
     }
   }
@@ -335,7 +406,7 @@ function validateRequestPrompts(restfile: RestFile): ValidationError[] {
       return errors;
     }
 
-    for (const [_, ...matches] of JSON.stringify(request).matchAll(
+    for (const [_, ...matches] of request.http.matchAll(
       promptTemplatePattern
     )) {
       const requestPromptReferences = Array.from(new Set(matches));
@@ -349,6 +420,27 @@ function validateRequestPrompts(restfile: RestFile): ValidationError[] {
           key: `requests.${request.id}.http`,
           message: `Referencing undefined prompt: ${requestPromptReference}`,
         });
+      }
+    }
+
+    if (request.tests) {
+      for (const testId of Object.keys(request.tests)) {
+        for (const [_, ...matches] of request.tests[testId].matchAll(
+          promptTemplatePattern
+        )) {
+          const requestPromptReferences = Array.from(new Set(matches));
+
+          for (const requestPromptReference of requestPromptReferences) {
+            if (Object.keys(request.prompts).includes(requestPromptReference)) {
+              continue;
+            }
+
+            errors.push({
+              key: `requests.${request.id}.tests.${testId}`,
+              message: `Referencing undefined prompt: ${requestPromptReference}`,
+            });
+          }
+        }
       }
     }
 
