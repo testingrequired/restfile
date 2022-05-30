@@ -1,23 +1,21 @@
 #!/usr/bin/env node
 
+import { Form, FormPromptOptions, List, Select } from "enquirer/lib/prompts";
+import expect from "expect";
 import * as fs from "fs/promises";
-import * as path from "path";
-import { validate } from "./validate";
-import { asyncLoadAll } from "./yaml";
-import fetch from "node-fetch";
-import { mapBodyForFetch, mapHeadersForFetch } from "./execute";
-import yargs from "yargs";
-import { List, Select, Form, FormPromptOptions } from "enquirer/lib/prompts";
 import {
   HttpZBody,
-  build,
-  HttpZResponseModel,
   HttpZHeader,
   HttpZRequestModel,
+  HttpZResponseModel,
 } from "http-z";
-import expect from "expect";
+import fetch from "node-fetch";
+import * as path from "path";
+import yargs from "yargs";
+import { buildHttp, InputRestFile, parse, parseHttp, validate } from ".";
+import { mapBodyForFetch, mapHeadersForFetch } from "./execute";
 import { sortObject } from "./utils";
-import { buildHttp, InputRestFile, parse, parseHttp } from ".";
+import { asyncLoadAll } from "./yaml";
 
 (async () => {
   yargs(process.argv.slice(2))
