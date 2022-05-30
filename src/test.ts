@@ -18,11 +18,14 @@ describe("test", () => {
 
   it("test", async () => {
     const spec = await asyncLoadAll(
-      await fs.readFile(path.join(process.cwd(), specFile), "utf-8")
+      await fs.readFile(path.join(path.dirname(__filename), specFile), "utf-8")
     );
 
     const expected = await asyncLoadAll(
-      await fs.readFile(path.join(process.cwd(), expectedFile), "utf-8")
+      await fs.readFile(
+        path.join(path.dirname(__filename), expectedFile),
+        "utf-8"
+      )
     );
 
     const errors = validate(spec);

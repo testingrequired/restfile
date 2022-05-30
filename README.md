@@ -28,7 +28,7 @@ There is a very basic CLI to view and execute requests.
 
 ![restfile-init](https://user-images.githubusercontent.com/728215/159113248-f365c185-76c8-44b4-ae77-5aca955e31ae.gif)
 
-### example.restfile.yml
+### examples/example.restfile.yml
 
 <!-- prettier-ignore -->
 ```yaml
@@ -92,7 +92,7 @@ Options:
 #### Show
 
 ```bash
-$ restfile -f example.restfile.yml -e prod show geo
+$ restfile -f examples/example.restfile.yml -e prod show geo
 ```
 
 ```
@@ -102,7 +102,7 @@ GET https://get.geojs.io/v1/ip/geo.json?ip={{? ipaddr}} HTTP/1.1
 #### Execute
 
 ```bash
-$ restfile -f example.restfile.yml -e prod execute geo
+$ restfile -f examples/example.restfile.yml -e prod execute geo
 # Fill In Request Prompts...
 # ipaddr: 1.1.1.1
 ```
@@ -127,7 +127,7 @@ Content-Type: application/json
 ##### With Default Prompt Values
 
 ```bash
-$ restfile -f example.restfile.yml -e prod execute geo
+$ restfile -f examples/example.restfile.yml -e prod execute geo
 ```
 
 Output:
@@ -147,7 +147,7 @@ Body:
 If a request has tests defined you can run those by including the `--test` or `-t` flag.
 
 ```bash
-$ restfile -f example.restfile.yml -e prod execute geo --test
+$ restfile -f examples/example.restfile.yml -e prod execute geo --test
 ```
 
 The test will check the response message to the test message and report differences. It will only check headers defined in the test request. Future versions will do the same for the presence of the body.
@@ -157,5 +157,5 @@ The test will check the response message to the test message and report differen
 CLI arguments can be passed using environment variables with this naming syntax: `RESTFILE_ARG_NAME`
 
 ```bash
-$ RESTFILE_FILE_PATH=".\example.restfile.yml" RESTFILE_ENV="prod" restfile show ip
+$ RESTFILE_FILE_PATH="./examples/example.restfile.yml" RESTFILE_ENV="prod" restfile show ip
 ```
