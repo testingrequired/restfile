@@ -1,4 +1,4 @@
-# _restfile_
+# 💤📄 _restfile_
 
 [![restfile](https://github.com/testingrequired/restfile-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/testingrequired/restfile-ts/actions/workflows/ci.yml)
 
