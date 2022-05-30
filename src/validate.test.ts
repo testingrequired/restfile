@@ -1,9 +1,9 @@
 import { validRestFile } from "./testHelpers";
-import { RestFile } from "./types";
+import { InputRestFile } from "./types";
 import { validate } from "./validate";
 
 describe("validate", () => {
-  let restfile: RestFile;
+  let restfile: InputRestFile;
 
   beforeEach(() => {
     restfile = validRestFile(["prod"]);
@@ -43,7 +43,7 @@ describe("validate", () => {
 
   it("should validate having no requests defined", () => {
     // Remove any defined requests
-    restfile = restfile.slice(0, 2) as RestFile;
+    restfile = restfile.slice(0, 2) as InputRestFile;
 
     expect(validate(restfile)).toEqual([]);
   });

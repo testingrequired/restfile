@@ -1,9 +1,9 @@
 import { parseData, parseSecrets } from "./parse";
 import { validRestFile } from "./testHelpers";
-import { RestFile } from "./types";
+import { InputRestFile } from "./types";
 
 describe("parseData", () => {
-  let restfile: RestFile;
+  let restfile: InputRestFile;
 
   beforeEach(() => {
     restfile = validRestFile(["prod"]);
@@ -29,7 +29,7 @@ describe("parseData", () => {
 });
 
 describe("parseSecret", () => {
-  let restfile: RestFile;
+  let restfile: InputRestFile;
 
   beforeEach(() => {
     restfile = [

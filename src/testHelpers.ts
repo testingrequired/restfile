@@ -1,6 +1,6 @@
-import { RestFile } from "./types";
+import { InputRestFile } from "./types";
 
-export function validRestFile(envs: string[]): RestFile {
+export function validRestFile(envs: string[]): InputRestFile {
   const collection = { name: "Test", envs };
   const data = {};
   for (const env of envs) {

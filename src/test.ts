@@ -31,6 +31,6 @@ describe("test", () => {
 
     const actual = parse(spec, "prod", secrets, prompts);
 
-    expect(actual).toEqual(expected);
+    expect(actual).toEqual(parse(expected, "prod", secrets, prompts));
   });
 });

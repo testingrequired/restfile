@@ -6,9 +6,9 @@ import {
   secretTemplatePattern,
   parseSecretKeys,
 } from "./parse";
-import { Collection, RestFile } from "./types";
+import { Collection, InputRestFile } from "./types";
 
-export function validate(restfile: RestFile): ValidationError[] {
+export function validate(restfile: InputRestFile): ValidationError[] {
   const errors: ValidationError[] = [];
 
   errors.push(...validateRestFileTypes(restfile));
@@ -27,7 +27,7 @@ export function validate(restfile: RestFile): ValidationError[] {
   return errors;
 }
 
-function validateUniqueRequestIds(restfile: RestFile): ValidationError[] {
+function validateUniqueRequestIds(restfile: InputRestFile): ValidationError[] {
   const [_, __, ...requests] = restfile;
   const errors: ValidationError[] = [];
 
@@ -55,7 +55,7 @@ function validateUniqueRequestIds(restfile: RestFile): ValidationError[] {
 }
 
 function validateAllRequestTemplateReferences(
-  restfile: RestFile
+  restfile: InputRestFile
 ): ValidationError[] {
   const [_, __, ...requests] = restfile;
   const errors: ValidationError[] = [];
@@ -172,7 +172,9 @@ function validateAllRequestTemplateReferences(
   return errors;
 }
 
-function validateNoSecretsInEnvData(restfile: RestFile): ValidationError[] {
+function validateNoSecretsInEnvData(
+  restfile: InputRestFile
+): ValidationError[] {
   const [collection, data] = restfile;
   const errors: ValidationError[] = [];
 
@@ -199,7 +201,7 @@ function validateNoSecretsInEnvData(restfile: RestFile): ValidationError[] {
 }
 
 function validateAllEnvKeysDefinedInRoot(
-  restfile: RestFile
+  restfile: InputRestFile
 ): ValidationError[] {
   const [collection, data] = restfile;
   const dataKeys = Object.keys(data);
@@ -236,7 +238,7 @@ function validateAllEnvKeysDefinedInRoot(
   return errors;
 }
 
-function validateRestFileTypes(restfile: RestFile): ValidationError[] {
+function validateRestFileTypes(restfile: InputRestFile): ValidationError[] {
   const [collection = {} as Collection, data, ...requests] = restfile;
   const errors: ValidationError[] = [];
 
@@ -387,7 +389,7 @@ function validateRestFileTypes(restfile: RestFile): ValidationError[] {
   return errors;
 }
 
-function validateRequestPrompts(restfile: RestFile): ValidationError[] {
+function validateRequestPrompts(restfile: InputRestFile): ValidationError[] {
   const [_, __, ...requests] = restfile;
 
   const errors: ValidationError[] = [];

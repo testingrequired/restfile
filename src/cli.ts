@@ -2,8 +2,6 @@
 
 import * as fs from "fs/promises";
 import * as path from "path";
-import { buildHttp, parse, parseHttp } from "./parse";
-import { RestFile } from "./types";
 import { validate } from "./validate";
 import { asyncLoadAll } from "./yaml";
 import fetch from "node-fetch";
@@ -19,6 +17,7 @@ import {
 } from "http-z";
 import expect from "expect";
 import { sortObject } from "./utils";
+import { buildHttp, InputRestFile, parse, parseHttp } from ".";
 
 (async () => {
   yargs(process.argv.slice(2))
@@ -52,7 +51,7 @@ import { sortObject } from "./utils";
           return;
         }
 
-        let restfile: RestFile;
+        let restfile: InputRestFile;
 
         try {
           restfile = await asyncLoadAll(
@@ -72,11 +71,11 @@ import { sortObject } from "./utils";
           return;
         }
 
-        const [_, __, ...requests] = parse(restfile, argv.env, {
+        const restfileObj = parse(restfile, argv.env, {
           secretToken: "secretToken",
         });
 
-        const requestIds = requests.map((r) => r.id);
+        const requestIds = restfileObj.requests.map((r) => r.id);
 
         if (requestIds.length === 0) {
           console.log("No requests defined");
@@ -95,7 +94,7 @@ import { sortObject } from "./utils";
           requestId = await prompt.run();
         }
 
-        const request = requests.find((r) => r.id === requestId);
+        const request = restfileObj.requests.find((r) => r.id === requestId);
 
         if (request) {
           console.log(request.http);
@@ -120,7 +119,7 @@ import { sortObject } from "./utils";
           type: "string",
         }),
       async (argv) => {
-        let restfile: RestFile;
+        let restfile: InputRestFile;
 
         try {
           restfile = await asyncLoadAll(
@@ -188,7 +187,7 @@ import { sortObject } from "./utils";
           return;
         }
 
-        let restfile: RestFile;
+        let restfile: InputRestFile;
 
         try {
           restfile = await asyncLoadAll(
@@ -213,9 +212,9 @@ import { sortObject } from "./utils";
           secretToken: "secretToken",
         });
 
-        const [_, __, ...requests_] = parsedRestfile;
+        const restfileObj = parsedRestfile;
 
-        const requestIds = requests_.map((r) => r.id);
+        const requestIds = restfileObj.requests.map((r) => r.id);
 
         if (requestIds.length === 0) {
           console.log("No requests defined");
@@ -234,7 +233,7 @@ import { sortObject } from "./utils";
           requestId = await prompt.run();
         }
 
-        let request = requests_.find((r) => r.id === requestId);
+        let request = restfileObj.requests.find((r) => r.id === requestId);
 
         if (request.prompts) {
           let prompts: FormPromptOptions[] = [];
@@ -263,7 +262,7 @@ import { sortObject } from "./utils";
 
           const promptData = await formPrompt.run();
 
-          const [_, __, ...requests] = parse(
+          const restfileObjSecondPass = parse(
             restfile,
             argv.env,
             {
@@ -272,7 +271,9 @@ import { sortObject } from "./utils";
             promptData
           );
 
-          request = requests.find((r) => r.id === requestId);
+          request = restfileObjSecondPass.requests.find(
+            (r) => r.id === requestId
+          );
         }
 
         if (request) {
@@ -401,7 +402,7 @@ import { sortObject } from "./utils";
           return;
         }
 
-        let restfile: RestFile;
+        let restfile: InputRestFile;
 
         try {
           restfile = await asyncLoadAll(

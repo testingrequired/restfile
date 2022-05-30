@@ -23,4 +23,4 @@ export interface RequestPrompt {
 
 export type Document = Collection | Data | Request;
 
-export type RestFile = [Collection, Data, ...Request[]];
+export type InputRestFile = [Collection, Data, ...Request[]];

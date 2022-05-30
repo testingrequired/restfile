@@ -1,8 +1,8 @@
 import { loadAll } from "js-yaml";
-import { Collection, Data, Document, Request, RestFile } from "./types";
+import { Collection, Data, Document, Request, InputRestFile } from "./types";
 
 export function asyncLoadAll(content: string) {
-  return new Promise<RestFile>((resolve, reject) => {
+  return new Promise<InputRestFile>((resolve, reject) => {
     try {
       const docs: Document[] = [];
 

@@ -1,4 +1,4 @@
-import { RestFile, Request, RequestPrompt } from "./types";
+import { Collection, Data, InputRestFile, Request } from "./types";
 import httpz, { HttpZRequestModel, HttpZResponseModel } from "http-z";
 
 export const varGlyph = "$";
@@ -20,12 +20,12 @@ export const promptTemplatePattern = new RegExp(
 
 /**
  *
- * @param {RestFile} restfile Target RestFile to parse data from
+ * @param {InputRestFile} restfile Target RestFile to parse data from
  * @param {string} env Name of environment
  * @returns Object with parsed data
  */
 export function parseData(
-  restfile: RestFile,
+  restfile: InputRestFile,
   env: string
 ): Record<string, string> {
   const [collection, data, __] = restfile;
@@ -60,11 +60,11 @@ export function parseData(
 
 /**
  *
- * @param {RestFile} restfile Target RestFile to parse data from
+ * @param {InputRestFile} restfile Target RestFile to parse data from
  * @param {string} env Name of environment
  * @returns Array of data keys
  */
-export function parseDataKeys(restfile: RestFile): string[] {
+export function parseDataKeys(restfile: InputRestFile): string[] {
   const [collection] = restfile;
   let [_, data] = restfile;
 
@@ -94,11 +94,11 @@ export function parseDataKeys(restfile: RestFile): string[] {
 
 /**
  *
- * @param {RestFile} restfile Target RestFile to parse data from
+ * @param {InputRestFile} restfile Target RestFile to parse data from
  * @param {string} env Name of environment
  * @returns Array of secret keys
  */
-export function parseSecretKeys(restfile: RestFile): string[] {
+export function parseSecretKeys(restfile: InputRestFile): string[] {
   let [_, data] = restfile;
 
   if (data === null) {
@@ -119,12 +119,12 @@ export function parseSecretKeys(restfile: RestFile): string[] {
 
 /**
  *
- * @param {RestFile} restfile Target RestFile to parse secrets from
+ * @param {InputRestFile} restfile Target RestFile to parse secrets from
  * @param {Record<string, any>} secrets Object with secret values to map from
  * @returns Object with parsed secrets
  */
 export function parseSecrets(
-  restfile: RestFile,
+  restfile: InputRestFile,
   secrets: Record<string, any>
 ): Record<string, string> {
   const [_, data, __] = restfile;
@@ -299,11 +299,11 @@ const mapTemplateValuesInRequest =
   };
 
 export function parse(
-  input: RestFile,
+  input: InputRestFile,
   env: string,
   secrets: Record<string, any>,
   prompts?: Record<string, string>
-): RestFile {
+): ParsedRestFile {
   const [inputCollection, inputData, ...inputRequests] = input;
 
   const envData = parseData(input, env);
@@ -315,9 +315,9 @@ export function parse(
       return mapTemplateValuesInRequest(envData, secretData, prompts)(x);
     });
 
-  const output: RestFile = [inputCollection, inputData, ...outputRequests];
+  const output: InputRestFile = [inputCollection, inputData, ...outputRequests];
 
-  return output;
+  return ParsedRestFile.from(output);
 }
 
 export function parseHttp<T extends HttpZRequestModel | HttpZResponseModel>(
@@ -345,5 +345,47 @@ export function buildHttp<T extends HttpZRequestModel | HttpZResponseModel>(
     );
 
     throw e;
+  }
+}
+
+export class ParsedRestFile {
+  #collection: Collection;
+  #data: Data;
+  #requests: Request[];
+
+  constructor(restfile: InputRestFile) {
+    const [collection, data, ...requests] = restfile;
+
+    this.#collection = collection;
+    this.#data = data;
+    this.#requests = requests;
+  }
+
+  get collection(): Collection {
+    return this.#collection;
+  }
+
+  get data(): Data {
+    return this.#data;
+  }
+
+  get requests(): Request[] {
+    return this.#requests;
+  }
+
+  to(): InputRestFile {
+    return [this.#collection, this.#data, ...this.#requests];
+  }
+
+  static to(parsedRestFile: ParsedRestFile): InputRestFile {
+    return [
+      parsedRestFile.#collection,
+      parsedRestFile.#data,
+      ...parsedRestFile.#requests,
+    ];
+  }
+
+  static from(inputRestFile: InputRestFile): ParsedRestFile {
+    return new ParsedRestFile(inputRestFile);
   }
 }
