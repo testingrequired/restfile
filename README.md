@@ -79,30 +79,28 @@ Commands:
   restfile show [requestId]                 Show information about a request
   restfile envs                             Show list of envs defined in
                                             restfile
-  restfile execute [requestId]              Execute a request
-  [promptsJson]
+  restfile execute <filePath> [requestId]   Execute a request
+  [promptsJson]                                                        [default]
   restfile validate                         Validate a restfile
   restfile init <newFilePath>               Generate empty restfile
 
+Positionals:
+  filePath     Path to restfile to load                                 [string]
+  requestId    Which request to show                                    [string]
+  promptsJson  The prompts answers in the form of a JSON string
+                                                        [string] [default: "{}"]
+
 Options:
-  --version  Show version number                                       [boolean]
-  --help     Show help                                                 [boolean]                                          [boolean]
+      --version  Show version number                                   [boolean]
+      --help     Show help                                             [boolean]
+  -e, --env      Environment to load data for                [string] [required]
+  -t, --test     Runs tests                           [boolean] [default: false]                                        [boolean]
 ```
 
-#### Show
+#### Running A Request
 
 ```bash
-$ restfile -f examples/example.restfile.yml -e prod show geo
-```
-
-```
-GET https://get.geojs.io/v1/ip/geo.json?ip={{? ipaddr}} HTTP/1.1
-```
-
-#### Execute
-
-```bash
-$ restfile -f examples/example.restfile.yml -e prod execute geo
+$ restfile -e prod examples/example.restfile.yml geo
 # Fill In Request Prompts...
 # ipaddr: 1.1.1.1
 ```
@@ -127,7 +125,7 @@ Content-Type: application/json
 ##### With Default Prompt Values
 
 ```bash
-$ restfile -f examples/example.restfile.yml -e prod execute geo
+$ restfile -e prod examples/example.restfile.yml geo
 ```
 
 Output:
@@ -147,7 +145,7 @@ Body:
 If a request has tests defined you can run those by including the `--test` or `-t` flag.
 
 ```bash
-$ restfile -f examples/example.restfile.yml -e prod execute geo --test
+$ restfile -e prod examples/example.restfile.yml geo --test
 ```
 
 The test will check the response message to the test message and report differences. It will only check headers defined in the test request. Future versions will do the same for the presence of the body.

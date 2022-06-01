@@ -147,12 +147,14 @@ import { asyncLoadAll } from "./yaml";
       }
     )
     .command(
-      "execute [requestId] [promptsJson]",
+      [
+        "execute <filePath> [requestId] [promptsJson]",
+        "$0 <filePath> [requestId] [promptsJson]",
+      ],
       "Execute a request",
       (yargs) =>
         yargs
-          .option("filePath", {
-            alias: "f",
+          .positional("filePath", {
             demandOption: true,
             description: "Path to restfile to load",
             type: "string",
