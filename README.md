@@ -74,4 +74,6 @@ The test will check the response message to the test message and report differen
 
 #### Dry Run
 
-Display the request but don't execute it. Tests are also not ran.
+The dry run flag (`--dry`, `-d`) will display the request but not execute it.
+
+![restfile-dry](https://user-images.githubusercontent.com/728215/171737565-b9ff3aec-102c-4e90-a239-520dab35932c.gif)
