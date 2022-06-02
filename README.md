@@ -2,13 +2,9 @@
 
 [![restfile](https://github.com/testingrequired/restfile-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/testingrequired/restfile-ts/actions/workflows/ci.yml)
 
-REST request collections in a deterministic human readable/writable file format.
+REST request collections in a deterministic human readable/writable file format. See [SPEC.md](SPEC.md) for full details around structure, prompts, and templating.
 
-## Spec
-
-See [SPEC.md](SPEC.md) for details on restfile structure, prompts, and templating.
-
-### Example
+## Example
 
 <!-- prettier-ignore -->
 ```yaml
