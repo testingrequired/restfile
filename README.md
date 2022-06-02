@@ -7,6 +7,7 @@ A collection of REST requests in a file format designed to be deterministic and 
 ## Goals
 
 - Easy to read and write. Inspired by markdown.
+- Writing REST request strings versus a request object
 - Explicit. Variables, secrets and prompts must be declared before usage.
 - Source control friendly. Diffs should be easy to understand.
 - DSL as flat as possible. Less mistakes and frustrations by avoid nested structures.
