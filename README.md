@@ -58,7 +58,7 @@ $ restfile -e prod examples/example.restfile.yml geo
 # ipaddr: 1.1.1.1
 ```
 
-![restfile-init](https://user-images.githubusercontent.com/728215/159113248-f365c185-76c8-44b4-ae77-5aca955e31ae.gif)
+![restfile](https://user-images.githubusercontent.com/728215/171736440-29ef2be6-c3d0-44ca-8d42-41b1ad3ba9e0.gif)
 
 #### Tests
 
