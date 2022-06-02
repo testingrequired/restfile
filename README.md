@@ -62,11 +62,13 @@ $ restfile -e prod examples/example.restfile.yml geo
 
 #### Tests
 
-If a request has tests defined you can run those by including the `--test` or `-t` flag.
+If a request has tests defined you can run those by including the `--test` or `-t` flag. It will display a diff between the test's expected response and the actual response.
 
 ```bash
 $ restfile -e prod examples/example.restfile.yml geo --test
 ```
+
+![restfile-test](https://user-images.githubusercontent.com/728215/171737072-e822248b-24e5-473a-94ae-dcd994b1add1.gif)
 
 The test will check the response message to the test message and report differences. It will only check headers defined in the test request. Future versions will do the same for the presence of the body.
 
