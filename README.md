@@ -2,9 +2,18 @@
 
 [![restfile](https://github.com/testingrequired/restfile-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/testingrequired/restfile-ts/actions/workflows/ci.yml)
 
-REST request collections in a deterministic human readable/writable file format. See [SPEC.md](SPEC.md) for full details around structure, prompts, and templating.
+A collection of REST requests in a file format designed to be deterministic and easy to read/write.
+
+## Goals
+
+- Easy to read and write. Inspired by markdown.
+- Explicit. Variables, secrets and prompts must be declared before usage.
+- Source control friendly. Diffs should be easy to understand.
+- DSL as flat as possible. Less mistakes and frustrations by avoid nested structures.
 
 ## Example
+
+See [SPEC.md](SPEC.md) for full details around structure, prompts, and templating.
 
 <!-- prettier-ignore -->
 ```yaml

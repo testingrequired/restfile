@@ -2,8 +2,8 @@
 
 ## Goals
 
-- Readable/editable. Inspired by markdown.
-- Self contained. Everything outside of secrets are defined in the restfile
+- Easy to read and write. Inspired by markdown.
+- Explicit. Variables, secrets and prompts must be declared before usage.
 - Source control friendly. Diffs should be easy to understand.
 - DSL as flat as possible. Less mistakes and frustrations by avoid nested structures.
 
@@ -24,15 +24,15 @@ Templating is used to ensure the restfile is generic.
 
 ### Variables
 
-Variables are defined in the data document can be accessed using `{{$ variable}}` e.g. `{{$ baseUrl}}`.
+Variables are defined in the `data` document can be accessed using `{{$ variable}}` e.g. `{{$ baseUrl}}`.
 
 ### Secrets
 
-Secrets are defined (without a value) in the data document as well and can be accessed using `{{! variable}}` e.g. `{{! baseUrl}}`. These will be provided at runtime by the client implementation.
+Secrets are defined (without a value) in the `data` document as well and can be accessed using `{{! variable}}` e.g. `{{! baseUrl}}`. These will be provided at runtime by the client implementation.
 
 ### Prompts
 
-Prompts are defined in each request and use the `{{? prompt}}` syntax e.g. `{{? id}}`.
+Prompts are defined in each `request` and use the `{{? prompt}}` syntax e.g. `{{? id}}`.
 
 ## Example
 
