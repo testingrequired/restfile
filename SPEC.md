@@ -1,8 +1,22 @@
 # restfile spec
 
+## Goals
+
+- Readable/editable. Inspired by markdown.
+- Self contained. Everything outside of secrets are defined in the restfile
+- Source control friendly. Diffs should be easy to understand.
+- DSL as flat as possible. Less mistakes and frustrations by avoid nested structures.
+
 ## File Format
 
 The tentative file format is multi-document YAML. Each file represents a collection of REST requests. The file defines how requests are made. A client would then read the restfile and do the work to make the request.
+
+### Why YAML?
+
+YAML has it's pitfalls but did have some vital features required:
+
+- Clean multiline strings. This is required to be able to defined `request.http` in a clean readable way.
+- Multiple documents in the same file. This is at the core of the restfile structure: collection, data, ...requests
 
 ## Templating
 

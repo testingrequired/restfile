@@ -165,6 +165,12 @@ import { asyncLoadAll } from "./yaml";
             describe: "Environment to load data for",
             demandOption: true,
           })
+          .option("dry", {
+            alias: "d",
+            type: "boolean",
+            describe: "Only show the request but don't execute",
+            default: false,
+          })
           .option("test", {
             alias: "t",
             type: "boolean",
@@ -278,6 +284,10 @@ import { asyncLoadAll } from "./yaml";
 
         if (request) {
           console.log(request.http);
+
+          if (argv.dry) {
+            return;
+          }
 
           const httpObj = parseHttp<HttpZRequestModel>(request.http);
 
