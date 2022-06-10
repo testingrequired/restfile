@@ -9,7 +9,7 @@ import * as path from "path";
 import fetch from "node-fetch";
 import expect from 'expect';
 
-export const command = "$0 <filePath> [requestId] [env]";
+export const command = "$0 <filePath> [requestId]";
 
 export const description = "Execute a request";
 
@@ -25,10 +25,10 @@ export const builder = (yargs) =>
         demandOption: true,
         description: "Which request to show",
     })
-    .positional("env", {
+    .option("env", {
         type: "string",
+        alias: "e",
         describe: "Environment to load data for",
-        demandOption: true,
     })
     .option("dry", {
         alias: "d",
@@ -70,7 +70,7 @@ export const handler = async (argv) => {
       return;
     }
 
-    if (!restfile[0].envs.includes(argv.env)) {
+    if (argv.env && !restfile[0].envs.includes(argv.env)) {
       console.log(
         `Invalid env for restfile: ${argv.env} (${restfile[0].envs.join(
           ", "

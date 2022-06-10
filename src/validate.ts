@@ -379,13 +379,6 @@ function validateRestFileTypes(restfile: InputRestFile): ValidationError[] {
     return errors;
   }
 
-  if (collection?.envs.length === 0) {
-    errors.push({
-      key: "collection.envs",
-      message: "Must defined at least one env",
-    });
-  }
-
   return errors;
 }
 

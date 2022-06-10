@@ -9,6 +9,18 @@ describe("parseData", () => {
     restfile = validRestFile(["prod"]);
   });
 
+  it('should default if env is undefined', () => {
+    const [_, data] = restfile;
+    data.foo = "bar";
+    data.prod = {
+      foo: "baz",
+    };
+
+    expect(parseData(restfile, undefined)).toEqual({
+      foo: "bar"
+    });
+  });
+
   it("should return object of resolved data from data document in restfile", () => {
     const [_, data] = restfile;
     data.foo = "bar";

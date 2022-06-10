@@ -1,7 +1,7 @@
 name: Examples
 description: |
   A restfile full of examples that can be used with the CLI execute.
-envs: [prod]
+envs: []
 ---
 baseUrl: https://get.geojs.io/v1
 ---

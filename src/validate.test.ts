@@ -410,17 +410,12 @@ describe("validate", () => {
         ]);
       });
 
-      it("should validate collection envs can not be empty", () => {
+      it("should validate collection envs can be empty", () => {
         const [collection] = restfile;
 
         collection.envs = [];
 
-        expect(validate(restfile)).toEqual([
-          {
-            key: "collection.envs",
-            message: "Must defined at least one env",
-          },
-        ]);
+        expect(validate(restfile)).toEqual([]);
       });
 
       it("should validate collection envs is an array", () => {
