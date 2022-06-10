@@ -21,9 +21,8 @@ import { asyncLoadAll } from "./yaml";
   yargs(process.argv.slice(2))
     .scriptName("restfile")
     .env("RESTFILE")
-    .usage("$0 <command> [args]")
     .command(
-      "$0 <filePath> [requestId]",
+      "$0 <filePath> [requestId] [env]",
       "Execute a request",
       (yargs) =>
         yargs
@@ -37,8 +36,7 @@ import { asyncLoadAll } from "./yaml";
             demandOption: true,
             description: "Which request to show",
           })
-          .option("env", {
-            alias: "e",
+          .positional("env", {
             type: "string",
             describe: "Environment to load data for",
             demandOption: true,
@@ -77,6 +75,16 @@ import { asyncLoadAll } from "./yaml";
         if (errors.length > 0) {
           console.log(
             `Invalid restfile:\n\n${JSON.stringify(errors, null, 2)}`
+          );
+
+          return;
+        }
+
+        if (!restfile[0].envs.includes(argv.env)) {
+          console.log(
+            `Invalid env for restfile: ${argv.env} (${restfile[0].envs.join(
+              ", "
+            )})`
           );
 
           return;
@@ -265,90 +273,12 @@ import { asyncLoadAll } from "./yaml";
       }
     )
     .command(
-      "validate",
-      "Validate a restfile",
-      (yargs) =>
-        yargs.option("filePath", {
-          alias: "f",
-          demandOption: true,
-          description: "Path to restfile to load",
-          type: "string",
-        }),
-      async (argv) => {
-        if (!argv.filePath) {
-          console.log("No restfile specified");
-          return;
-        }
-
-        let restfile: InputRestFile;
-
-        try {
-          restfile = await asyncLoadAll(
-            await fs.readFile(path.join(process.cwd(), argv.filePath), "utf-8")
-          );
-        } catch (e) {
-          console.log(`Error reading ${argv.filePath}: ${e.message}`);
-          return;
-        }
-
-        const errors = validate(restfile);
-
-        if (errors.length > 0) {
-          console.log(
-            `Invalid restfile:\n\n${JSON.stringify(errors, null, 2)}`
-          );
-        } else {
-          console.log("Valid restfile!");
-        }
-      }
-    )
-    .command(
-      "envs",
-      "Show list of envs defined in restfile",
-      (yargs) =>
-        yargs.option("filePath", {
-          alias: "f",
-          demandOption: true,
-          description: "Path to restfile to load",
-          type: "string",
-        }),
-      async (argv) => {
-        let restfile: InputRestFile;
-
-        try {
-          restfile = await asyncLoadAll(
-            await fs.readFile(path.join(process.cwd(), argv.filePath), "utf-8")
-          );
-        } catch (e) {
-          console.log(`Error reading ${argv.filePath}: ${e.message}`);
-          return;
-        }
-
-        const errors = validate(restfile);
-
-        if (errors.length > 0) {
-          console.log(
-            `Invalid restfile:\n\n${JSON.stringify(errors, null, 2)}`
-          );
-        }
-
-        const [collection] = restfile;
-
-        if (!collection.envs) {
-          console.log("Restfile does not define envs");
-          return;
-        }
-
-        console.log(collection.envs.join(", "));
-      }
-    )
-    .command(
       "init <newFilePath>",
       "Generate empty restfile",
       (yargs) =>
         yargs.positional("newFilePath", {
           type: "string",
-          description: "Path to save new restfile to",
+          description: "Path for new restfile",
         }),
       async (argv) => {
         const documentDataForm = new Form({
