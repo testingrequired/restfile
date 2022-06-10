@@ -23,134 +23,7 @@ import { asyncLoadAll } from "./yaml";
     .env("RESTFILE")
     .usage("$0 <command> [args]")
     .command(
-      "show [requestId]",
-      "Show information about a request",
-      (yargs) =>
-        yargs
-          .option("filePath", {
-            alias: "f",
-            demandOption: true,
-            description: "Path to restfile to load",
-            type: "string",
-          })
-          .option("env", {
-            alias: "e",
-            type: "string",
-            describe: "Environment to load data for",
-            demandOption: true,
-          })
-          .positional("requestId", {
-            type: "string",
-            description: "Which request to show",
-          }),
-      async (argv) => {
-        if (!argv.filePath) {
-          console.log("No restfile specified");
-          return;
-        }
-
-        let restfile: InputRestFile;
-
-        try {
-          restfile = await asyncLoadAll(
-            await fs.readFile(path.join(process.cwd(), argv.filePath), "utf-8")
-          );
-        } catch (e) {
-          console.log(`Error reading ${argv.filePath}: ${e.message}`);
-          return;
-        }
-
-        const errors = validate(restfile);
-
-        if (errors.length > 0) {
-          console.log(
-            `Invalid restfile:\n\n${JSON.stringify(errors, null, 2)}`
-          );
-          return;
-        }
-
-        const restfileObj = parse(restfile, argv.env, {
-          secretToken: "secretToken",
-        });
-
-        const requestIds = restfileObj.requests.map((r) => r.id);
-
-        if (requestIds.length === 0) {
-          console.log("No requests defined");
-          return;
-        }
-
-        let requestId = argv.requestId;
-
-        if (!requestId) {
-          const prompt = new Select({
-            name: "request",
-            message: "Select A Request",
-            choices: requestIds,
-          });
-
-          requestId = await prompt.run();
-        }
-
-        const request = restfileObj.requests.find((r) => r.id === requestId);
-
-        if (request) {
-          console.log(request.http);
-        } else {
-          console.log(
-            [
-              `Request not found: ${requestId}`,
-              `Available Requests:\n\n${requestIds.join("\n")}`,
-            ].join("\n")
-          );
-        }
-      }
-    )
-    .command(
-      "envs",
-      "Show list of envs defined in restfile",
-      (yargs) =>
-        yargs.option("filePath", {
-          alias: "f",
-          demandOption: true,
-          description: "Path to restfile to load",
-          type: "string",
-        }),
-      async (argv) => {
-        let restfile: InputRestFile;
-
-        try {
-          restfile = await asyncLoadAll(
-            await fs.readFile(path.join(process.cwd(), argv.filePath), "utf-8")
-          );
-        } catch (e) {
-          console.log(`Error reading ${argv.filePath}: ${e.message}`);
-          return;
-        }
-
-        const errors = validate(restfile);
-
-        if (errors.length > 0) {
-          console.log(
-            `Invalid restfile:\n\n${JSON.stringify(errors, null, 2)}`
-          );
-        }
-
-        const [collection] = restfile;
-
-        if (!collection.envs) {
-          console.log("Restfile does not define envs");
-          return;
-        }
-
-        console.log(collection.envs.join(", "));
-      }
-    )
-    .command(
-      [
-        "execute <filePath> [requestId] [promptsJson]",
-        "$0 <filePath> [requestId] [promptsJson]",
-      ],
+      "$0 <filePath> [requestId]",
       "Execute a request",
       (yargs) =>
         yargs
@@ -158,6 +31,11 @@ import { asyncLoadAll } from "./yaml";
             demandOption: true,
             description: "Path to restfile to load",
             type: "string",
+          })
+          .positional("requestId", {
+            type: "string",
+            demandOption: true,
+            description: "Which request to show",
           })
           .option("env", {
             alias: "e",
@@ -176,16 +54,6 @@ import { asyncLoadAll } from "./yaml";
             type: "boolean",
             describe: "Runs tests",
             default: false,
-          })
-          .positional("requestId", {
-            type: "string",
-            demandOption: true,
-            description: "Which request to show",
-          })
-          .positional("promptsJson", {
-            default: "{}",
-            type: "string",
-            description: "The prompts answers in the form of a JSON string",
           }),
       async (argv) => {
         if (!argv.filePath) {
@@ -432,6 +300,46 @@ import { asyncLoadAll } from "./yaml";
         } else {
           console.log("Valid restfile!");
         }
+      }
+    )
+    .command(
+      "envs",
+      "Show list of envs defined in restfile",
+      (yargs) =>
+        yargs.option("filePath", {
+          alias: "f",
+          demandOption: true,
+          description: "Path to restfile to load",
+          type: "string",
+        }),
+      async (argv) => {
+        let restfile: InputRestFile;
+
+        try {
+          restfile = await asyncLoadAll(
+            await fs.readFile(path.join(process.cwd(), argv.filePath), "utf-8")
+          );
+        } catch (e) {
+          console.log(`Error reading ${argv.filePath}: ${e.message}`);
+          return;
+        }
+
+        const errors = validate(restfile);
+
+        if (errors.length > 0) {
+          console.log(
+            `Invalid restfile:\n\n${JSON.stringify(errors, null, 2)}`
+          );
+        }
+
+        const [collection] = restfile;
+
+        if (!collection.envs) {
+          console.log("Restfile does not define envs");
+          return;
+        }
+
+        console.log(collection.envs.join(", "));
       }
     )
     .command(
