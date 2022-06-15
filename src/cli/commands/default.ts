@@ -1,14 +1,17 @@
 import { Select } from "enquirer/lib/prompts";
 import * as fs from "fs/promises";
 import * as path from "path";
-import { InputRestFile, parse, validate } from "..";
-import { runRequestPrompts } from "../cli_prompts";
 import {
+  InputRestFile,
+  parse,
+  validate,
   executeRequest,
   mapFetchResponseToHTTPResponseString,
   runRequestTests,
-} from "../execute";
-import { asyncLoadAll } from "../yaml";
+} from "../..";
+import { runRequestPrompts } from "../cli_prompts";
+
+import { asyncLoadAll } from "../../yaml";
 
 export const command = "$0 <filePath> [requestId]";
 

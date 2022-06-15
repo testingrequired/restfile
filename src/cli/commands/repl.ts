@@ -4,14 +4,18 @@ import * as fs from "node:fs/promises";
 import path from "node:path";
 import repl from "node:repl";
 import { Argv } from "yargs";
-import { InputRestFile, parse, parseHttp, validate } from "..";
-import { runRequestPrompts } from "../cli_prompts";
 import {
+  InputRestFile,
+  parse,
+  parseHttp,
+  validate,
   executeRequest,
   mapFetchResponseToHTTPResponseString,
-} from "../execute";
-import { Request } from "../types";
-import { asyncLoadAll } from "../yaml";
+} from "../..";
+import { runRequestPrompts } from "../cli_prompts";
+
+import { Request } from "../../types";
+import { asyncLoadAll } from "../../yaml";
 
 export const command = "repl <filePath>";
 

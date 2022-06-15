@@ -1,4 +1,4 @@
-import { Request } from "./types";
+import { Request } from "../types";
 import { Form, FormPromptOptions } from "enquirer/lib/prompts";
 
 export async function runRequestPrompts<T = any>(request: Request): Promise<T> {
