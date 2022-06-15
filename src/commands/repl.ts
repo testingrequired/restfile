@@ -1,19 +1,17 @@
-import { Argv } from "yargs";
-import repl from "node:repl";
-import { buildHttp, InputRestFile, parse, parseHttp, validate } from "..";
-import { asyncLoadAll } from "../yaml";
-import path from "node:path";
+import { Select } from "enquirer/lib/prompts";
+import { HttpZRequestModel, HttpZResponseModel } from "http-z";
 import * as fs from "node:fs/promises";
-import { Form, FormPromptOptions, Select } from "enquirer/lib/prompts";
+import path from "node:path";
+import repl from "node:repl";
+import { Argv } from "yargs";
+import { InputRestFile, parse, parseHttp, validate } from "..";
+import { runRequestPrompts } from "../cli_prompts";
 import {
-  HttpZBody,
-  HttpZHeader,
-  HttpZRequestModel,
-  HttpZResponseModel,
-} from "http-z";
-import { mapBodyForFetch, mapHeadersForFetch } from "../execute";
-import fetch from "node-fetch";
+  executeRequest,
+  mapFetchResponseToHTTPResponseString,
+} from "../execute";
 import { Request } from "../types";
+import { asyncLoadAll } from "../yaml";
 
 export const command = "repl <filePath>";
 
@@ -149,28 +147,7 @@ export const handler = async (argv: Arguments) => {
     let request = parsedRestfile.requests.find((r) => r.id === requestId);
 
     if (request.prompts) {
-      let prompts: FormPromptOptions[] = [];
-
-      for (const [key, value] of Object.entries(request.prompts)) {
-        const prompt: FormPromptOptions = {
-          name: key,
-          message: key,
-        };
-
-        if (typeof value === "object" && typeof value.default != "undefined") {
-          prompt.initial = value.default;
-        }
-
-        prompts.push(prompt);
-      }
-
-      const formPrompt = new Form({
-        name: "prompts",
-        message: "Please Fill In Request Prompts:",
-        choices: prompts,
-      });
-
-      const promptData = await formPrompt.run();
+      const promptData = await runRequestPrompts(request);
 
       process.stdin.resume();
       r.displayPrompt();
@@ -193,47 +170,15 @@ export const handler = async (argv: Arguments) => {
       lastRequest = request;
       lastRequestString = request.http;
 
-      const httpObj = parseHttp<HttpZRequestModel>(request.http);
+      const response = await executeRequest(request);
 
-      const response = await fetch(httpObj.target, {
-        method: httpObj.method,
-        body: mapBodyForFetch(httpObj),
-        headers: mapHeadersForFetch(httpObj),
-      });
+      const httpResponseString = await mapFetchResponseToHTTPResponseString(
+        response
+      );
 
-      const responseBody = await response.text();
+      lastRequestResponseString = httpResponseString;
 
-      const headers: HttpZHeader[] = [];
-
-      for (const [name, value] of response.headers.entries()) {
-        headers.push({ name, value });
-      }
-
-      const body = await (async () => {
-        const body: HttpZBody = {
-          contentType: response.headers.get("content-type"),
-          text: responseBody,
-          boundary: "",
-          params: [],
-        };
-
-        return body;
-      })();
-
-      let httpModel: HttpZResponseModel = {
-        protocolVersion: "HTTP/1.1",
-        statusCode: response.status,
-        statusMessage: response.statusText,
-        body,
-        headers,
-        headersSize: new TextEncoder().encode(JSON.stringify(headers)).length,
-        bodySize: new TextEncoder().encode(responseBody).length,
-      };
-
-      const httpString = buildHttp<HttpZResponseModel>(httpModel);
-      lastRequestResponseString = httpString;
-
-      console.log(httpString);
+      console.log(httpResponseString);
     } else {
       console.log(
         [
