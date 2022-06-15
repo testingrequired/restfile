@@ -14,8 +14,10 @@ id: geo
 prompts:
   ipaddr:
     default: 8.8.8.8
+  junk:
+    default: test
 http: |+
-  GET {{$ baseUrl}}/ip/geo.json?ip={{? ipaddr}} HTTP/1.1
+  GET {{$ baseUrl}}/ip/geo.json?ip={{? ipaddr}}&junkText={{? junk}} HTTP/1.1
 
 tests:
   shouldBeOk: |+
