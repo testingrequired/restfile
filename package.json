@@ -6,7 +6,7 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "bin": {
-    "restfile": "dist/cli.js"
+    "restfile": "dist/cli/cli.js"
   },
   "scripts": {
     "tsup": "tsup",

@@ -13,9 +13,9 @@ import { runRequestPrompts } from "../cli_prompts";
 
 import { asyncLoadAll } from "../../yaml";
 
-export const command = "$0 <filePath> [requestId]";
+export const command = "run <filePath> [requestId]";
 
-export const description = "Execute a request";
+export const description = "Run a request";
 
 export const builder = (yargs) =>
   yargs
