@@ -68,32 +68,23 @@ $ restfile init ./new.restfile.yml
 ```bash
 $ restfile run examples/example.restfile.yml geo
 
-# GET https://get.geojs.io/v1/ip/geo.json?ip=8.8.8.8&junkText=test HTTP/1.1
+GET https://get.geojs.io/v1/ip/geo.json?ip=8.8.8.8&junkText=test HTTP/1.1
 
 
-# HTTP/1.1 200 OK
-# Access-Control-Allow-Methods: GET
-# Access-Control-Allow-Origin: *
-# Alt-Svc: h3=":443"; ma=86400, h3-29=":443"; ma=86400
-# Cache-Control: no-store, no-cache, must-revalidate, private, max-age=0
-# Cf-Cache-Status: DYNAMIC
-# Cf-Ray: 71c75f7d78412998-ORD
-# Connection: close
-# Content-Encoding: gzip
-# Content-Type: application/json
-# Date: Thu, 16 Jun 2022 23:37:22 GMT
-# Expect-Ct: max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"
-# Nel: {"success_fraction":0,"report_to":"cf-nel","max_age":604800}
-# Pragma: no-cache
-# Report-To: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=%2BHW19o6aAHkmHy9gDdpIliVkYY%2FYsfM2ZkWvvHHIyyLS6KsNfQvUy1BQtkhfyYYh6HJlL6AexKEHCvWs4a0PJp5ZPhLvjejEyOcVcTi8LbhjAbgHCwkhID24waepYw%3D%3D"}],"group":"cf-nel","max_age":604800}
-# Server: cloudflare
-# Strict-Transport-Security: max-age=15552000; includeSubDomains; preload
-# Transfer-Encoding: chunked
-# X-Content-Type-Options: nosniff
-# X-Geojs-Location: NYC
-# X-Request-Id: 1579acfd7854eeaf9f1543ec7a3cef66-NYC
+HTTP/1.1 200 OK
+Access-Control-Allow-Methods: GET
+Access-Control-Allow-Origin: *
+Cache-Control: no-store, no-cache, must-revalidate, private, max-age=0
+Connection: close
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 16 Jun 2022 23:37:22 GMT
+Server: cloudflare
+Strict-Transport-Security: max-age=15552000; includeSubDomains; preload
+Transfer-Encoding: chunked
+X-Content-Type-Options: nosniff
 
-# [{"country_code3":"USA","continent_code":"NA","latitude":"37.751","longitude":"-97.822","accuracy":1000,"organization_name":"GOOGLE","timezone":"America\/Chicago","asn":15169,"organization":"AS15169 GOOGLE","country_code":"US","area_code":"0","ip":"8.8.8.8","country":"United States"}]
+[{"country_code3":"USA","continent_code":"NA","latitude":"37.751","longitude":"-97.822","accuracy":1000,"organization_name":"GOOGLE","timezone":"America\/Chicago","asn":15169,"organization":"AS15169 GOOGLE","country_code":"US","area_code":"0","ip":"8.8.8.8","country":"United States"}]
 ```
 
 #### Tests
@@ -102,6 +93,62 @@ If a request has tests defined you can run those by including the `--test` or `-
 
 ```bash
 $ restfile run examples/example.restfile.yml geo --test
+
+HTTP/1.1 200 OK
+Access-Control-Allow-Methods: GET
+Access-Control-Allow-Origin: *
+Cache-Control: no-store, no-cache, must-revalidate, private, max-age=0
+Connection: close
+Content-Encoding: gzip
+Content-Type: application/json
+Date: Thu, 16 Jun 2022 23:39:31 GMT
+Server: cloudflare
+Strict-Transport-Security: max-age=15552000; includeSubDomains; preload
+Transfer-Encoding: chunked
+X-Content-Type-Options: nosniff
+
+[{"country_code3":"AUS","continent_code":"OC","latitude":"-33.494","longitude":"143.2104","accuracy":1000,"organization_name":"CLOUDFLARENET","timezone":"Australia\/Sydney","asn":13335,"organization":"AS13335 CLOUDFLARENET","country_code":"AU","area_code":"0","ip":"1.1.1.1","country":"Australia"}]
+
+Test Errors:
+
+shouldBeOk: expect(received).toEqual(expected) // deep equality
+
+- Expected  - 11
++ Received  + 11
+
+  HTTP/1.1 200 OK
+  Access-Control-Allow-Methods: GET
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json
+
+  [
+    {
+      "accuracy": 1000,
+      "area_code": "0",
+-     "asn": 15169,
++     "asn": 13335,
+-     "continent_code": "NA",
++     "continent_code": "OC",
+-     "country": "United States",
++     "country": "Australia",
+-     "country_code": "US",
++     "country_code": "AU",
+-     "country_code3": "USA",
++     "country_code3": "AUS",
+-     "ip": "8.8.8.8",
++     "ip": "1.1.1.1",
+-     "latitude": "37.751",
++     "latitude": "-33.494",
+-     "longitude": "-97.822",
++     "longitude": "143.2104",
+-     "organization": "AS15169 GOOGLE",
++     "organization": "AS13335 CLOUDFLARENET",
+-     "organization_name": "GOOGLE",
++     "organization_name": "CLOUDFLARENET",
+-     "timezone": "America/Chicago"
++     "timezone": "Australia/Sydney"
+    }
+  ]
 ```
 
 The test will check the response message to the test message and report differences. It will only check headers defined in the test request. Future versions will do the same for the presence of the body.
@@ -112,6 +159,8 @@ The dry run flag (`--dry`, `-d`) will display the request but will not execute i
 
 ```bash
 $ restfile run -e prod examples/example.restfile.yml geo --dry
+
+GET https://get.geojs.io/v1/ip/geo.json?ip=8.8.8.8&junkText=test HTTP/1.1
 ```
 
 ### Repl
@@ -125,10 +174,10 @@ Loading repl for examples/example.restfile.yml
 
 > await run(requests.ip);
 > responseBody;
-# { ip: '173.16.197.170' }
+{ ip: '173.16.197.170' }
 > await run(requests.geo, {ipaddr: responseBody.ip});
 > responseBody[0].country;
-# 'United States'
+'United States'
 ```
 
 #### Functions
