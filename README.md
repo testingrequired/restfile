@@ -106,6 +106,12 @@ Loading repl for examples/example.restfile.yml
 # 'United States'
 ```
 
+#### Functions
+
+| Function | Description   | Example                  |
+| -------- | ------------- | ------------------------ |
+| `run`    | Run a request | `await run(requests.ip)` |
+
 #### Variables
 
 | Variable             | Description                                                                                   |
@@ -120,9 +126,3 @@ Loading repl for examples/example.restfile.yml
 | `responseString`     | The raw HTTP response string from the last request made                                       |
 | `responseBody`       | An object from the parsed response body of the last request                                   |
 | `responseBodyString` | The string response body of the last request                                                  |
-
-#### Functions
-
-| Function | Description   | Example                  |
-| -------- | ------------- | ------------------------ |
-| `run`    | Run a request | `await run(requests.ip)` |
