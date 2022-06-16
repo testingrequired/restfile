@@ -81,10 +81,72 @@ export const handler = async (argv: Arguments) => {
   let lastRequestString: string;
   let lastRequest: Request;
   let lastRequestResponseString: string;
+  let lastResponseBodyString: string;
 
-  r.context.$ = {};
+  r.context.run = async (
+    request: Request,
+    promptData: Record<string, string> = {},
+    secretData: Record<string, string> = {}
+  ) => {
+    if (request.prompts) {
+      const requiredPrompts = [];
 
-  Object.defineProperty(r.context.$, "lastHTTPRequest", {
+      for (const key of Object.keys(request.prompts)) {
+        if (!request.prompts[key].hasOwnProperty("default")) {
+          requiredPrompts.push(key);
+        }
+      }
+
+      const promptDataKeys = Object.keys(promptData);
+
+      const missingKeys = requiredPrompts.filter(
+        (key) => !promptDataKeys.includes(key)
+      );
+
+      if (missingKeys.length > 0) {
+        throw new Error(
+          `Prompt data required as second arugment to run if request has prompts: ${missingKeys}`
+        );
+      }
+
+      console.log(
+        `Using prompt data: ${JSON.stringify(Object.entries(promptData))}`
+      );
+
+      const restfileObjSecondPass = parse(
+        restfile,
+        argv.env,
+        secretData,
+        promptData
+      );
+
+      request = restfileObjSecondPass.requests.find((r) => r.id === request.id);
+    }
+
+    lastRequest = request;
+    lastRequestString = lastRequest.http;
+    const response = await executeRequest(request);
+
+    const responseBody = await response.text();
+    lastResponseBodyString = responseBody;
+
+    const httpResponseString = await mapFetchResponseToHTTPResponseString(
+      response,
+      responseBody
+    );
+
+    lastRequestResponseString = httpResponseString;
+
+    console.log(lastRequestResponseString);
+  };
+
+  r.context.requests = {};
+
+  for (const request of parsedRestfile.requests) {
+    r.context.requests[request.id] = request;
+  }
+
+  Object.defineProperty(r.context, "request", {
     get() {
       if (!lastRequestString) {
         return;
@@ -96,13 +158,37 @@ export const handler = async (argv: Arguments) => {
     },
   });
 
-  Object.defineProperty(r.context.$, "lastRequest", {
+  Object.defineProperty(r.context, "requestString", {
+    get() {
+      return lastRequestString;
+    },
+  });
+
+  Object.defineProperty(r.context, "restfileRequest", {
     get() {
       return lastRequest;
     },
   });
 
-  Object.defineProperty(r.context.$, "lastHTTPResponse", {
+  Object.defineProperty(r.context, "responseString", {
+    get() {
+      return lastRequestResponseString;
+    },
+  });
+
+  Object.defineProperty(r.context, "responseBodyString", {
+    get() {
+      return lastResponseBodyString;
+    },
+  });
+
+  Object.defineProperty(r.context, "responseBody", {
+    get() {
+      return JSON.parse(lastResponseBodyString);
+    },
+  });
+
+  Object.defineProperty(r.context, "response", {
     get() {
       if (!lastRequestResponseString) {
         return;
@@ -125,75 +211,6 @@ export const handler = async (argv: Arguments) => {
     },
   });
 
-  r.context.__restfilePath = argv.filePath;
-  r.context.__restfile = parsedRestfile;
-
-  r.defineCommand("restfile.run", async (requestId: string) => {
-    console.log(`Running request: ${requestId}`);
-
-    const requestIds = parsedRestfile.requests.map((r) => r.id);
-
-    if (!requestId) {
-      const prompt = new Select({
-        name: "request",
-        message: "Select A Request",
-        choices: requestIds,
-      });
-
-      requestId = await prompt.run().then((rid) => {
-        r.displayPrompt();
-        r.resume();
-        process.stdin.resume();
-        return rid;
-      });
-    }
-
-    let request = parsedRestfile.requests.find((r) => r.id === requestId);
-
-    if (request.prompts) {
-      const promptData = await runRequestPrompts(request);
-
-      process.stdin.resume();
-      r.displayPrompt();
-
-      const restfileObjSecondPass = parse(
-        restfile,
-        argv.env,
-        {
-          secretToken: "secretToken",
-        },
-        promptData
-      );
-
-      request = restfileObjSecondPass.requests.find((r) => r.id === requestId);
-    }
-
-    if (request) {
-      console.log(request.http);
-
-      lastRequest = request;
-      lastRequestString = request.http;
-
-      const response = await executeRequest(request);
-
-      const httpResponseString = await mapFetchResponseToHTTPResponseString(
-        response
-      );
-
-      lastRequestResponseString = httpResponseString;
-
-      console.log(httpResponseString);
-    } else {
-      console.log(
-        [
-          `Request not found: ${requestId}`,
-          `Available Requests:\n\n${requestIds.join("\n")}`,
-        ].join("\n")
-      );
-    }
-
-    console.log("DONE!");
-
-    r.displayPrompt();
-  });
+  r.context.restfilePath = argv.filePath;
+  r.context.restfile = parsedRestfile;
 };

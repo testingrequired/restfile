@@ -96,13 +96,30 @@ $ restfile repl examples/example.restfile.yml
 # >
 ```
 
-#### Running A Request
-
 ```bash
-> .restfile.run geo
-# Fill In Request Prompts...
-# ipaddr: 1.1.1.1
-> $.lastRequest # Last restfile request
-> $.lastHTTPRequest # Last request object
-> $.lastHTTPResponse # Last response object
+> await run(requests.ip);
+> await run(requests.geo, {ipaddr: responseBody.ip})
+> responseBody[0].country
+# 'United States'
 ```
+
+#### Variables
+
+| Variable             | Description                                                                                   |
+| -------------------- | --------------------------------------------------------------------------------------------- |
+| `restfile`           | The parsed restfile e.g. collection, data and requests                                        |
+| `restfilePath`       | Path to the parsed restfile                                                                   |
+| `restfileRequest`    | An object representing the restfile request of the last request made                          |
+| `requests`           | An object of the requests from the `restfile` with the request ids as keys e.g. `requests.ip` |
+| `request`            | An object representing the last request made                                                  |
+| `requestString`      | The raw HTTP request string from the last request made                                        |
+| `response`           | An object representing the response from the last request made                                |
+| `responseString`     | The raw HTTP response string from the last request made                                       |
+| `responseBody`       | An object from the parsed response body of the last request                                   |
+| `responseBodyString` | The string response body of the last request                                                  |
+
+#### Functions
+
+| Function | Description   | Example                  |
+| -------- | ------------- | ------------------------ |
+| `run`    | Run a request | `await run(requests.ip)` |

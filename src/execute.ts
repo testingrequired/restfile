@@ -88,10 +88,9 @@ export function runRequestTests(
 }
 
 export async function mapFetchResponseToHTTPResponseString(
-  response: Response
+  response: Response,
+  responseBody: string
 ): Promise<string> {
-  const responseBody = await response.text();
-
   const headers: HttpZHeader[] = [];
 
   for (const [name, value] of response.headers.entries()) {

@@ -131,8 +131,11 @@ export const handler = async (argv) => {
 
     const response = await executeRequest(request);
 
+    const responseBody = await response.text();
+
     const httpResponseString = await mapFetchResponseToHTTPResponseString(
-      response
+      response,
+      responseBody
     );
 
     console.log(httpResponseString);
