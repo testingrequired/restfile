@@ -67,8 +67,33 @@ $ restfile init ./new.restfile.yml
 
 ```bash
 $ restfile run examples/example.restfile.yml geo
-# Fill In Request Prompts...
-# ipaddr: 1.1.1.1
+
+# GET https://get.geojs.io/v1/ip/geo.json?ip=8.8.8.8&junkText=test HTTP/1.1
+
+
+# HTTP/1.1 200 OK
+# Access-Control-Allow-Methods: GET
+# Access-Control-Allow-Origin: *
+# Alt-Svc: h3=":443"; ma=86400, h3-29=":443"; ma=86400
+# Cache-Control: no-store, no-cache, must-revalidate, private, max-age=0
+# Cf-Cache-Status: DYNAMIC
+# Cf-Ray: 71c75f7d78412998-ORD
+# Connection: close
+# Content-Encoding: gzip
+# Content-Type: application/json
+# Date: Thu, 16 Jun 2022 23:37:22 GMT
+# Expect-Ct: max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"
+# Nel: {"success_fraction":0,"report_to":"cf-nel","max_age":604800}
+# Pragma: no-cache
+# Report-To: {"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=%2BHW19o6aAHkmHy9gDdpIliVkYY%2FYsfM2ZkWvvHHIyyLS6KsNfQvUy1BQtkhfyYYh6HJlL6AexKEHCvWs4a0PJp5ZPhLvjejEyOcVcTi8LbhjAbgHCwkhID24waepYw%3D%3D"}],"group":"cf-nel","max_age":604800}
+# Server: cloudflare
+# Strict-Transport-Security: max-age=15552000; includeSubDomains; preload
+# Transfer-Encoding: chunked
+# X-Content-Type-Options: nosniff
+# X-Geojs-Location: NYC
+# X-Request-Id: 1579acfd7854eeaf9f1543ec7a3cef66-NYC
+
+# [{"country_code3":"USA","continent_code":"NA","latitude":"37.751","longitude":"-97.822","accuracy":1000,"organization_name":"GOOGLE","timezone":"America\/Chicago","asn":15169,"organization":"AS15169 GOOGLE","country_code":"US","area_code":"0","ip":"8.8.8.8","country":"United States"}]
 ```
 
 #### Tests
