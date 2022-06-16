@@ -56,25 +56,28 @@ tests:
 2. Run `npm ci`
 3. Run `npm run global-install`
 
-### Executing A Request
+### Create New Restfile
 
 ```bash
-$ restfile -e prod examples/example.restfile.yml geo
+$ restfile init ./new.restfile.yml
+# Fill in name, description, env names...
+```
+
+### Running A Request
+
+```bash
+$ restfile run examples/example.restfile.yml geo
 # Fill In Request Prompts...
 # ipaddr: 1.1.1.1
 ```
-
-![restfile](https://user-images.githubusercontent.com/728215/171736440-29ef2be6-c3d0-44ca-8d42-41b1ad3ba9e0.gif)
 
 #### Tests
 
 If a request has tests defined you can run those by including the `--test` or `-t` flag. It will display a diff between the test's expected response and the actual response.
 
 ```bash
-$ restfile -e prod examples/example.restfile.yml geo --test
+$ restfile run examples/example.restfile.yml geo --test
 ```
-
-![restfile-test](https://user-images.githubusercontent.com/728215/171737072-e822248b-24e5-473a-94ae-dcd994b1add1.gif)
 
 The test will check the response message to the test message and report differences. It will only check headers defined in the test request. Future versions will do the same for the presence of the body.
 
@@ -83,7 +86,23 @@ The test will check the response message to the test message and report differen
 The dry run flag (`--dry`, `-d`) will display the request but will not execute it or it's tests.
 
 ```bash
-$ restfile -e prod examples/example.restfile.yml geo --dry
+$ restfile run -e prod examples/example.restfile.yml geo --dry
 ```
 
-![restfile-dry](https://user-images.githubusercontent.com/728215/171737565-b9ff3aec-102c-4e90-a239-520dab35932c.gif)
+### Repl
+
+```bash
+$ restfile repl examples/example.restfile.yml
+# >
+```
+
+#### Running A Request
+
+```bash
+> .restfile.run geo
+# Fill In Request Prompts...
+# ipaddr: 1.1.1.1
+> $.lastRequest # Last restfile request
+> $.lastHTTPRequest # Last request object
+> $.lastHTTPResponse # Last response object
+```
