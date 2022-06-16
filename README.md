@@ -91,15 +91,18 @@ $ restfile run -e prod examples/example.restfile.yml geo --dry
 
 ### Repl
 
-```bash
-$ restfile repl examples/example.restfile.yml
-# >
-```
+The repl lets you run requests and interact with requests/responses in a dynamic way.
 
 ```bash
+$ restfile repl examples/example.restfile.yml
+
+Loading repl for examples/example.restfile.yml
+
 > await run(requests.ip);
-> await run(requests.geo, {ipaddr: responseBody.ip})
-> responseBody[0].country
+> responseBody;
+# { ip: '173.16.197.170' }
+> await run(requests.geo, {ipaddr: responseBody.ip});
+> responseBody[0].country;
 # 'United States'
 ```
 
