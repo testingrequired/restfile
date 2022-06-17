@@ -182,21 +182,18 @@ Loading repl for examples/example.restfile.yml
 
 #### Functions
 
-| Function | Description   | Example                  |
-| -------- | ------------- | ------------------------ |
-| `run`    | Run a request | `await run(requests.ip)` |
+| Function       | Description   | Example                  |
+| -------------- | ------------- | ------------------------ |
+| `run(request)` | Run a request | `await run(requests.ip)` |
 
 #### Variables
 
-| Variable             | Description                                                                                   |
-| -------------------- | --------------------------------------------------------------------------------------------- |
-| `restfile`           | The parsed restfile e.g. collection, data and requests                                        |
-| `restfilePath`       | Path to the parsed restfile                                                                   |
-| `restfileRequest`    | An object representing the restfile request of the last request made                          |
-| `requests`           | An object of the requests from the `restfile` with the request ids as keys e.g. `requests.ip` |
-| `request`            | An object representing the last request made                                                  |
-| `requestString`      | The raw HTTP request string from the last request made                                        |
-| `response`           | An object representing the response from the last request made                                |
-| `responseString`     | The raw HTTP response string from the last request made                                       |
-| `responseBody`       | An object from the parsed response body of the last request                                   |
-| `responseBodyString` | The string response body of the last request                                                  |
+| Variable             | Description                                                                                      |
+| -------------------- | ------------------------------------------------------------------------------------------------ |
+| `requests`           | An object of the requests from the `restfile` with the request ids as keys e.g. `requests.ip`    |
+| `request`            | An object representing the last request made (`undefined` if no requests made)                   |
+| `requestString`      | The raw HTTP request string from the last request made (`undefined` if no requests made)         |
+| `response`           | An object representing the response from the last request made (`undefined` if no requests made) |
+| `responseString`     | The raw HTTP response string from the last request made (`undefined` if no requests made)        |
+| `responseBody`       | An object from the parsed response body of the last request (`undefined` if no requests made)    |
+| `responseBodyString` | The string response body of the last request (`undefined` if no requests made)                   |
