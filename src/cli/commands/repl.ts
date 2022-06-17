@@ -9,6 +9,7 @@ import {
   mapFetchResponseToHTTPResponseString,
   parse,
   parseHttp,
+  runRequestTests,
   validate,
 } from "../..";
 import { Request } from "../../types";
@@ -87,6 +88,34 @@ export const handler = async (argv: Arguments) => {
   let lastRequest: Request;
   let lastRequestResponseString: string;
   let lastResponseBodyString: string;
+
+  r.context.tests = () => {
+    if (!lastRequest) {
+      console.log("Please make a request before running tests");
+      return;
+    }
+
+    if (!lastRequest.tests) {
+      console.log("No tests found on last request");
+      return;
+    }
+
+    const testErrors = runRequestTests(lastRequest, lastRequestResponseString);
+
+    const failure = Object.keys(testErrors).length > 0;
+
+    if (failure) {
+      console.log(
+        `Test Errors:\n\n${Object.entries(testErrors)
+          .map(([testId, e]) => `${testId}: ${e.message}`)
+          .join("\n")}`
+      );
+    } else {
+      console.log("All tests passed");
+    }
+
+    return !failure;
+  };
 
   r.context.run = async (
     request: Request,
