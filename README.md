@@ -27,7 +27,7 @@ Variables are values that can be used in `request.http` using the templating syn
 <!-- prettier-ignore -->
 ```yaml
 name: Variables Example
-envs: [local, prod]
+envs: []
 ---
 baseUrl: https://example.com
 ---
@@ -113,6 +113,77 @@ http: |+
   Authorization: Bearer {{! token}}
 
 
+```
+
+## Format
+
+A restfile is a multi-document YAML file with documents defining information about [collection](#collection), [data](#data) and [requests](#requests).
+
+### Collection
+
+The `collection` document defines the `name`, `description` and a list of `env` names.
+
+<!-- prettier-ignore -->
+```yaml
+# Collection
+name: Example
+description: Example restfile to demonstrate the format
+envs: []
+---
+# Data
+---
+# Requests
+```
+
+### Data
+
+The `data` document defines [variables](#variables) and [secrets](#secrets) to be used in templating [requests](#requests).
+
+<!-- prettier-ignore -->
+```yaml
+# Collection
+name: Example
+description: Example restfile to demonstrate the format
+envs: []
+---
+# Data
+baseUrl: https://example.com
+token!: !!str
+---
+# Requests
+```
+
+### Requests
+
+<!-- prettier-ignore -->
+```yaml
+# Collection
+name: Example
+description: Example restfile to demonstrate the format
+envs: []
+---
+# Data
+baseUrl: https://example.com
+token!: !!str
+---
+# Request 1
+id: example-get
+http: |+
+  GET {{$ baseUrl}} HTTP/1.1
+  Authorization: Bearer {{! token}}
+
+
+---
+# Request 2
+id: example-post
+prompts:
+  title: !!str
+  url: !!str
+http: |+
+  POST {{$ baseUrl}} HTTP/1.1
+  Authorization: Bearer {{! token}}
+
+  {"title":"{{?title}}","url":"{{?url}}"}
 ```
 
 ## Example
