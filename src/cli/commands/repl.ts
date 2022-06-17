@@ -1,19 +1,16 @@
-import { Select } from "enquirer/lib/prompts";
 import { HttpZRequestModel, HttpZResponseModel } from "http-z";
 import * as fs from "node:fs/promises";
 import path from "node:path";
 import repl from "node:repl";
 import { Argv } from "yargs";
 import {
+  executeRequest,
   InputRestFile,
+  mapFetchResponseToHTTPResponseString,
   parse,
   parseHttp,
   validate,
-  executeRequest,
-  mapFetchResponseToHTTPResponseString,
 } from "../..";
-import { runRequestPrompts } from "../cli_prompts";
-
 import { Request } from "../../types";
 import { asyncLoadAll } from "../../yaml";
 
@@ -78,6 +75,14 @@ export const handler = async (argv: Arguments) => {
     terminal: true,
   });
 
+  r.context.collection = parsedRestfile.collection;
+  r.context.data = parsedRestfile.data;
+  r.context.requests = {};
+
+  for (const request of parsedRestfile.requests) {
+    r.context.requests[request.id] = request;
+  }
+
   let lastRequestString: string;
   let lastRequest: Request;
   let lastRequestResponseString: string;
@@ -139,12 +144,6 @@ export const handler = async (argv: Arguments) => {
 
     console.log(lastRequestResponseString);
   };
-
-  r.context.requests = {};
-
-  for (const request of parsedRestfile.requests) {
-    r.context.requests[request.id] = request;
-  }
 
   Object.defineProperty(r.context, "request", {
     get() {
@@ -210,7 +209,4 @@ export const handler = async (argv: Arguments) => {
       };
     },
   });
-
-  r.context.restfilePath = argv.filePath;
-  r.context.restfile = parsedRestfile;
 };
