@@ -14,10 +14,10 @@ A collection of REST requests in a file format designed to be deterministic and 
 
 ## Features
 
-- Variables
-- Environments
-- Prompts
-- Secrets
+- [Variables](#variables)
+- [Environments](#environments)
+- [Prompts](#prompts)
+- [Secrets](#secrets)
 - Templating
 
 ### Variables
