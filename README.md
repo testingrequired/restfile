@@ -12,6 +12,109 @@ A collection of REST requests in a file format designed to be deterministic and 
 - Source control friendly. Diffs should be easy to understand.
 - DSL as flat as possible. Less mistakes and frustrations by avoid nested structures.
 
+## Features
+
+- Variables
+- Environments
+- Prompts
+- Secrets
+- Templating
+
+### Variables
+
+Variables are values that can be used in `request.http` using the templating syntax `{{$ variable}}`
+
+<!-- prettier-ignore -->
+```yaml
+name: Variables Example
+envs: [local, prod]
+---
+baseUrl: https://example.com
+---
+id: example
+http: |+
+  GET {{$ baseUrl}} HTTP/1.1
+
+
+```
+
+### Environments
+
+Environments allow variables to be defined with environmental values. The variable must still be defined at the root level to be used in an environment.
+
+<!-- prettier-ignore -->
+```yaml
+name: Environmental Variables Example
+envs: [local, prod]
+---
+baseUrl: !!str
+
+local:
+  baseUrl: http://localhost:8080
+prod:
+  baseUrl: https://example.com
+---
+id: example
+http: |+
+  GET {{$ baseUrl}} HTTP/1.1
+
+
+```
+
+### Prompts
+
+Prompts are values expected to be supplied at request time. Prompts must be defined in `request.prompts` and used in `request.http`. The templating syntax is `{{? prompt}}`.
+
+<!-- prettier-ignore -->
+```yaml
+name: Prompts Example
+envs: [local, prod]
+---
+baseUrl: !!str
+
+local:
+  baseUrl: http://localhost:8080
+prod:
+  baseUrl: https://example.com
+---
+id: example
+prompts:
+  query: !!str
+http: |+
+  GET {{$ baseUrl}}?q={{? query}} HTTP/1.1
+
+
+```
+
+### Secrets
+
+Secrets are variables that are populated at runtime. The difference from prompts is that secrets aren't provided by the user but programatically e.g. AWS Secrets Manager.
+
+Secrets are defined as variables using this syntax `secretVar!: !!str` (the `!` at the end is required) and the templating syntax is `{{! secretVar}}`.
+
+<!-- prettier-ignore -->
+```yaml
+name: Prompts Example
+envs: [local, prod]
+---
+baseUrl: !!str
+token!: !!str
+
+local:
+  baseUrl: http://localhost:8080
+prod:
+  baseUrl: https://example.com
+---
+id: example
+prompts:
+  query: !!str
+http: |+
+  GET {{$ baseUrl}}?q={{? query}} HTTP/1.1
+  Authorization: Bearer {{! token}}
+
+
+```
+
 ## Example
 
 See [SPEC.md](SPEC.md) for full details around structure, prompts, and templating.
