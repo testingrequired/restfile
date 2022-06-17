@@ -184,7 +184,7 @@ http: |+
   POST {{$ baseUrl}} HTTP/1.1
   Authorization: Bearer {{! token}}
 
-  {"title":"{{?title}}","url":"{{?url}}"}
+  {"title":"{{? title}}","url":"{{? url}}"}
 
 ```
 
