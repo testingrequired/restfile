@@ -182,9 +182,9 @@ Loading repl for examples/example.restfile.yml
 
 #### Functions
 
-| Function       | Description   | Example                  |
-| -------------- | ------------- | ------------------------ |
-| `run(request)` | Run a request | `await run(requests.ip)` |
+| Function                                       | Description   | Example                  |
+| ---------------------------------------------- | ------------- | ------------------------ |
+| `run(request: RestfileRequest): Promise<void>` | Run a request | `await run(requests.ip)` |
 
 #### Variables
 
