@@ -356,6 +356,8 @@ Loading repl for examples/example.restfile.yml
 'United States'
 ```
 
+![restfile-repl2](https://user-images.githubusercontent.com/728215/174259388-ecd4198a-fbeb-4461-a00d-41153fc438dd.gif)
+
 #### Functions
 
 | Function                                                                         | Description                                                                | Example                                       |
