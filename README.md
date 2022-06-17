@@ -155,6 +155,8 @@ token!: !!str
 
 ### Requests
 
+The rest of the documents are `requests`. Each request requires an `id` and the request defined in `request.http`. Requests can also have a `description` and [prompts](#prompts).
+
 <!-- prettier-ignore -->
 ```yaml
 # Collection
