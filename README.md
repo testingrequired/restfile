@@ -172,7 +172,6 @@ http: |+
   GET {{$ baseUrl}} HTTP/1.1
   Authorization: Bearer {{! token}}
 
-
 ---
 # Request 2
 id: example-post
@@ -184,6 +183,7 @@ http: |+
   Authorization: Bearer {{! token}}
 
   {"title":"{{?title}}","url":"{{?url}}"}
+
 ```
 
 ## Example
