@@ -226,6 +226,8 @@ tests:
 
 ## CLI
 
+The CLI is an example implementation of a restfile client.
+
 ### Installation
 
 1. Clone down this repo. This package isn't published at this time.
