@@ -2,7 +2,7 @@
 
 [![restfile](https://github.com/testingrequired/restfile-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/testingrequired/restfile-ts/actions/workflows/ci.yml)
 
-A collection of REST requests in a file format designed to be deterministic and easy to read/write.
+A collection of REST requests in a file format designed to be easy to read/write.
 
 ## Goals
 
