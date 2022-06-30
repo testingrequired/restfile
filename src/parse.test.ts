@@ -1,15 +1,15 @@
+import { InputRestfile } from "./new_interface";
 import { parseData, parseSecrets } from "./parse";
 import { validRestFile } from "./testHelpers";
-import { InputRestFile } from "./types";
 
 describe("parseData", () => {
-  let restfile: InputRestFile;
+  let restfile: InputRestfile;
 
   beforeEach(() => {
     restfile = validRestFile(["prod"]);
   });
 
-  it('should default if env is undefined', () => {
+  it("should default if env is undefined", () => {
     const [_, data] = restfile;
     data.foo = "bar";
     data.prod = {
@@ -17,7 +17,7 @@ describe("parseData", () => {
     };
 
     expect(parseData(restfile, undefined)).toEqual({
-      foo: "bar"
+      foo: "bar",
     });
   });
 
@@ -41,7 +41,7 @@ describe("parseData", () => {
 });
 
 describe("parseSecret", () => {
-  let restfile: InputRestFile;
+  let restfile: InputRestfile;
 
   beforeEach(() => {
     restfile = [
