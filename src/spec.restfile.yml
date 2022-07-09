@@ -69,7 +69,6 @@ http: |+
   user-agent: {{$ userAgent}}
   Authorization: Bearer {{! secretToken}}
 
-  {"text": "Hello World!"}
 ---
 id: posts/deletePostById
 description: Delete a blog post

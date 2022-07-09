@@ -1,18 +1,20 @@
 import { HttpZRequestModel, HttpZResponseModel } from "http-z";
-import * as fs from "node:fs/promises";
 import path from "node:path";
 import repl from "node:repl";
 import { Argv } from "yargs";
 import {
   executeRequest,
-  InputRestFile,
   mapFetchResponseToHTTPResponseString,
-  parse,
   parseHttp,
   runRequestTests,
-  validate,
 } from "../..";
-import { Request } from "../../types";
+import {
+  InputRestfile,
+  InputRestfileObject,
+  Restfile,
+  RestfileRequest,
+  RestfileRequestDocument,
+} from "../../restfile";
 import { asyncLoadAll } from "../../yaml";
 
 export const command = "repl <filePath>";
@@ -40,52 +42,40 @@ export const builder = (yargs: Argv<Arguments>) =>
 export const handler = async (argv: Arguments) => {
   console.log("Loading repl for " + argv.filePath);
 
-  let restfile: InputRestFile;
+  const restfilePath = path.join(process.cwd(), argv.filePath);
+
+  let inputRestfile: InputRestfile;
 
   try {
-    restfile = await asyncLoadAll(
-      await fs.readFile(path.join(process.cwd(), argv.filePath), "utf-8")
-    );
+    inputRestfile = await Restfile.load(restfilePath);
   } catch (e) {
-    console.log(`Error reading ${argv.filePath}: ${e.message}`);
+    console.log(`Error loading restfile: ${e.message}`);
     return;
   }
 
-  const errors = validate(restfile);
-
-  if (errors.length > 0) {
-    console.log(`Invalid restfile:\n\n${JSON.stringify(errors, null, 2)}`);
-
-    return;
-  }
-
-  if (argv.env && !restfile[0].envs.includes(argv.env)) {
+  if (argv.env && !inputRestfile[0].envs.includes(argv.env)) {
     console.log(
-      `Invalid env for restfile: ${argv.env} (${restfile[0].envs.join(", ")})`
+      `Invalid env for restfile: ${argv.env} (${inputRestfile[0].envs.join(
+        ", "
+      )})`
     );
 
     return;
   }
 
-  const parsedRestfile = parse(restfile, argv.env, {
+  const secretData = {
     secretToken: "secretToken",
-  });
+  };
+
+  const restfile = Restfile.parse(inputRestfile, argv.env, secretData);
 
   const r = repl.start({
     prompt: "> ",
     terminal: true,
   });
 
-  r.context.collection = parsedRestfile.collection;
-  r.context.data = parsedRestfile.data;
-  r.context.requests = {};
-
-  for (const request of parsedRestfile.requests) {
-    r.context.requests[request.id] = request;
-  }
-
   let lastRequestString: string;
-  let lastRequest: Request;
+  let lastRequest: RestfileRequestDocument;
   let lastRequestResponseString: string;
   let lastResponseBodyString: string;
 
@@ -118,15 +108,18 @@ export const handler = async (argv: Arguments) => {
   };
 
   r.context.run = async (
-    request: Request,
-    promptData: Record<string, string> = {},
-    secretData: Record<string, string> = {}
+    requestId: string,
+    promptData: Record<string, string> = {}
   ) => {
-    if (request.prompts) {
+    const inputRestFileObj = InputRestfileObject.from(inputRestfile);
+    let inputRequest = inputRestFileObj.request(requestId);
+    let request: RestfileRequest;
+
+    if (inputRequest.prompts) {
       const requiredPrompts = [];
 
-      for (const key of Object.keys(request.prompts)) {
-        if (!request.prompts[key].hasOwnProperty("default")) {
+      for (const key of Object.keys(inputRequest.prompts)) {
+        if (!inputRequest.prompts[key].hasOwnProperty("default")) {
           requiredPrompts.push(key);
         }
       }
@@ -147,14 +140,9 @@ export const handler = async (argv: Arguments) => {
         `Using prompt data: ${JSON.stringify(Object.entries(promptData))}`
       );
 
-      const restfileObjSecondPass = parse(
-        restfile,
-        argv.env,
-        secretData,
-        promptData
-      );
-
-      request = restfileObjSecondPass.requests.find((r) => r.id === request.id);
+      request = restfile.request(requestId, promptData);
+    } else {
+      request = restfile.request(requestId);
     }
 
     lastRequest = request;

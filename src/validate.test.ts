@@ -1,9 +1,9 @@
+import { InputRestfile } from ".";
 import { validRestFile } from "./testHelpers";
-import { InputRestFile } from "./types";
 import { validate } from "./validate";
 
 describe("validate", () => {
-  let restfile: InputRestFile;
+  let restfile: InputRestfile;
 
   beforeEach(() => {
     restfile = validRestFile(["prod"]);
@@ -43,7 +43,7 @@ describe("validate", () => {
 
   it("should validate having no requests defined", () => {
     // Remove any defined requests
-    restfile = restfile.slice(0, 2) as InputRestFile;
+    restfile = restfile.slice(0, 2) as InputRestfile;
 
     expect(validate(restfile)).toEqual([]);
   });
@@ -299,6 +299,23 @@ describe("validate", () => {
           a: "",
         },
         http: `GET http://example.com HTTP/1.1
+
+        `,
+      });
+
+      expect(validate(restfile)).toEqual([
+        {
+          key: "requests.test.prompts.a",
+          message: "Defined prompt never referenced",
+        },
+      ]);
+
+      restfile.push({
+        id: "test2",
+        prompts: {
+          a: "",
+        },
+        http: `GET http://example.com/{{? a}} HTTP/1.1
 
         `,
       });

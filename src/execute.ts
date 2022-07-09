@@ -5,13 +5,22 @@ import {
   HttpZRequestModel,
   HttpZResponseModel,
 } from "http-z";
-import { buildHttp, parseHttp } from ".";
-import { Request } from "./types";
+import { buildHttp, parseHttp, RestfileRequest } from ".";
 import fetch, { Response } from "node-fetch";
 import { sortObject } from "./utils";
 import expect from "expect";
 
-export function mapBodyForFetch(httpObj: HttpZRequestModel) {
+export function executeRequest(request: RestfileRequest): Promise<Response> {
+  const httpObj = parseHttp<HttpZRequestModel>(request.http);
+
+  return fetch(httpObj.target, {
+    method: httpObj.method,
+    body: mapBodyForFetch(httpObj),
+    headers: mapHeadersForFetch(httpObj),
+  });
+}
+
+function mapBodyForFetch(httpObj: HttpZRequestModel) {
   if (!httpObj.body) {
     return undefined;
   }
@@ -29,24 +38,14 @@ export function mapBodyForFetch(httpObj: HttpZRequestModel) {
   }
 }
 
-export function mapHeadersForFetch(httpObj) {
+function mapHeadersForFetch(httpObj) {
   return httpObj.headers.reduce((acc, { name, value }) => {
     return { ...acc, [name]: value };
   }, {});
 }
 
-export function executeRequest(request: Request): Promise<Response> {
-  const httpObj = parseHttp<HttpZRequestModel>(request.http);
-
-  return fetch(httpObj.target, {
-    method: httpObj.method,
-    body: mapBodyForFetch(httpObj),
-    headers: mapHeadersForFetch(httpObj),
-  });
-}
-
 export function runRequestTests(
-  request: Request,
+  request: RestfileRequest,
   httpResponseString: string
 ): Record<string, Error> {
   const httpModel = parseHttp<HttpZResponseModel>(httpResponseString);
@@ -97,16 +96,12 @@ export async function mapFetchResponseToHTTPResponseString(
     headers.push({ name, value });
   }
 
-  const body = await (async () => {
-    const body: HttpZBody = {
-      contentType: response.headers.get("content-type"),
-      text: responseBody,
-      boundary: "",
-      params: [],
-    };
-
-    return body;
-  })();
+  const body: HttpZBody = {
+    contentType: response.headers.get("content-type"),
+    text: responseBody,
+    boundary: "",
+    params: [],
+  };
 
   let httpModel: HttpZResponseModel = {
     protocolVersion: "HTTP/1.1",

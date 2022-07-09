@@ -1,5 +1,5 @@
-import { Collection, Data, InputRestFile, Request } from "./types";
 import httpz, { HttpZRequestModel, HttpZResponseModel } from "http-z";
+import { InputRestfile, RestfileRequestDocument } from ".";
 
 export const varGlyph = "$";
 export const secretGlyph = "!";
@@ -25,7 +25,7 @@ export const promptTemplatePattern = new RegExp(
  * @returns Object with parsed data
  */
 export function parseData(
-  restfile: InputRestFile,
+  restfile: InputRestfile,
   env: string
 ): Record<string, string> {
   const [collection, data, __] = restfile;
@@ -64,7 +64,7 @@ export function parseData(
  * @param {string} env Name of environment
  * @returns Array of data keys
  */
-export function parseDataKeys(restfile: InputRestFile): string[] {
+export function parseDataKeys(restfile: InputRestfile): string[] {
   const [collection] = restfile;
   let [_, data] = restfile;
 
@@ -98,7 +98,7 @@ export function parseDataKeys(restfile: InputRestFile): string[] {
  * @param {string} env Name of environment
  * @returns Array of secret keys
  */
-export function parseSecretKeys(restfile: InputRestFile): string[] {
+export function parseSecretKeys(restfile: InputRestfile): string[] {
   let [_, data] = restfile;
 
   if (data === null) {
@@ -124,7 +124,7 @@ export function parseSecretKeys(restfile: InputRestFile): string[] {
  * @returns Object with parsed secrets
  */
 export function parseSecrets(
-  restfile: InputRestFile,
+  restfile: InputRestfile,
   secrets: Record<string, any>
 ): Record<string, string> {
   const [_, data, __] = restfile;
@@ -151,7 +151,7 @@ const mapTemplateValuesInRequest =
     secretData: Record<string, any>,
     prompts?: Record<string, string>
   ) =>
-  (inputRequest: Request): Request => {
+  (inputRequest: RestfileRequestDocument): RestfileRequestDocument => {
     const outputRequest = { ...inputRequest };
 
     // Add headers from the request to http
@@ -298,28 +298,6 @@ const mapTemplateValuesInRequest =
     return outputRequest;
   };
 
-export function parse(
-  input: InputRestFile,
-  env: string,
-  secrets: Record<string, any>,
-  prompts?: Record<string, string>
-): ParsedRestFile {
-  const [inputCollection, inputData, ...inputRequests] = input;
-
-  const envData = parseData(input, env);
-  const secretData = parseSecrets(input, secrets);
-
-  const outputRequests = inputRequests
-    .filter((x) => x)
-    .map((x) => {
-      return mapTemplateValuesInRequest(envData, secretData, prompts)(x);
-    });
-
-  const output: InputRestFile = [inputCollection, inputData, ...outputRequests];
-
-  return ParsedRestFile.from(output);
-}
-
 export function parseHttp<T extends HttpZRequestModel | HttpZResponseModel>(
   inputHttp: string
 ): T {
@@ -345,47 +323,5 @@ export function buildHttp<T extends HttpZRequestModel | HttpZResponseModel>(
     );
 
     throw e;
-  }
-}
-
-export class ParsedRestFile {
-  #collection: Collection;
-  #data: Data;
-  #requests: Request[];
-
-  constructor(restfile: InputRestFile) {
-    const [collection, data, ...requests] = restfile;
-
-    this.#collection = collection;
-    this.#data = data;
-    this.#requests = requests;
-  }
-
-  get collection(): Collection {
-    return this.#collection;
-  }
-
-  get data(): Data {
-    return this.#data;
-  }
-
-  get requests(): Request[] {
-    return this.#requests;
-  }
-
-  to(): InputRestFile {
-    return [this.#collection, this.#data, ...this.#requests];
-  }
-
-  static to(parsedRestFile: ParsedRestFile): InputRestFile {
-    return [
-      parsedRestFile.#collection,
-      parsedRestFile.#data,
-      ...parsedRestFile.#requests,
-    ];
-  }
-
-  static from(inputRestFile: InputRestFile): ParsedRestFile {
-    return new ParsedRestFile(inputRestFile);
   }
 }

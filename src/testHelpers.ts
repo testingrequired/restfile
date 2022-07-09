@@ -1,6 +1,6 @@
-import { InputRestFile, Request } from "./types";
+import { InputRestfile, RestfileRequestDocument } from ".";
 
-export function validRestFile(envs: string[]): InputRestFile {
+export function validRestFile(envs: string[]): InputRestfile {
   const collection = { name: "Test", envs };
   const data = {};
   for (const env of envs) {
@@ -15,7 +15,7 @@ export function validRestFile(envs: string[]): InputRestFile {
 export function validRequest(
   id: string,
   http: string = "GET http://example.com HTTP/1.1"
-): Request {
+): RestfileRequestDocument {
   return {
     id,
     http,

@@ -1,3 +1,4 @@
+import { InputRestfile, RestfileInfoDocument } from ".";
 import {
   varTemplatePattern,
   secretGlyph,
@@ -6,9 +7,8 @@ import {
   secretTemplatePattern,
   parseSecretKeys,
 } from "./parse";
-import { Collection, InputRestFile } from "./types";
 
-export function validate(restfile: InputRestFile): ValidationError[] {
+export function validate(restfile: InputRestfile): ValidationError[] {
   const errors: ValidationError[] = [];
 
   errors.push(...validateRestFileTypes(restfile));
@@ -27,7 +27,7 @@ export function validate(restfile: InputRestFile): ValidationError[] {
   return errors;
 }
 
-function validateUniqueRequestIds(restfile: InputRestFile): ValidationError[] {
+function validateUniqueRequestIds(restfile: InputRestfile): ValidationError[] {
   const [_, __, ...requests] = restfile;
   const errors: ValidationError[] = [];
 
@@ -55,7 +55,7 @@ function validateUniqueRequestIds(restfile: InputRestFile): ValidationError[] {
 }
 
 function validateAllRequestTemplateReferences(
-  restfile: InputRestFile
+  restfile: InputRestfile
 ): ValidationError[] {
   const [_, __, ...requests] = restfile;
   const errors: ValidationError[] = [];
@@ -173,7 +173,7 @@ function validateAllRequestTemplateReferences(
 }
 
 function validateNoSecretsInEnvData(
-  restfile: InputRestFile
+  restfile: InputRestfile
 ): ValidationError[] {
   const [collection, data] = restfile;
   const errors: ValidationError[] = [];
@@ -201,7 +201,7 @@ function validateNoSecretsInEnvData(
 }
 
 function validateAllEnvKeysDefinedInRoot(
-  restfile: InputRestFile
+  restfile: InputRestfile
 ): ValidationError[] {
   const [collection, data] = restfile;
   const dataKeys = Object.keys(data);
@@ -238,8 +238,8 @@ function validateAllEnvKeysDefinedInRoot(
   return errors;
 }
 
-function validateRestFileTypes(restfile: InputRestFile): ValidationError[] {
-  const [collection = {} as Collection, data, ...requests] = restfile;
+function validateRestFileTypes(restfile: InputRestfile): ValidationError[] {
+  const [collection = {} as RestfileInfoDocument, data, ...requests] = restfile;
   const errors: ValidationError[] = [];
 
   switch (typeof collection?.name) {
@@ -382,7 +382,7 @@ function validateRestFileTypes(restfile: InputRestFile): ValidationError[] {
   return errors;
 }
 
-function validateRequestPrompts(restfile: InputRestFile): ValidationError[] {
+function validateRequestPrompts(restfile: InputRestfile): ValidationError[] {
   const [_, __, ...requests] = restfile;
 
   const errors: ValidationError[] = [];
@@ -453,6 +453,8 @@ function validateRequestPrompts(restfile: InputRestFile): ValidationError[] {
       if (requestPromptReferences.includes(requestPromptsKey)) {
         continue;
       }
+
+      debugger;
 
       errors.push({
         key: `requests.${request.id}.prompts.${requestPromptsKey}`,

@@ -1,17 +1,13 @@
 import { Select } from "enquirer/lib/prompts";
-import * as fs from "fs/promises";
+import { Form, FormPromptOptions } from "enquirer/lib/prompts";
 import * as path from "path";
 import {
-  InputRestFile,
-  parse,
-  validate,
   executeRequest,
   mapFetchResponseToHTTPResponseString,
   runRequestTests,
 } from "../..";
-import { runRequestPrompts } from "../cli_prompts";
 
-import { asyncLoadAll } from "../../yaml";
+import { InputRestfile, InputRestfileObject, Restfile } from "../../restfile";
 
 export const command = "run <filePath> [requestId]";
 
@@ -47,48 +43,72 @@ export const builder = (yargs) =>
       default: false,
     });
 
+async function runRequestPrompts<T = any>(
+  inputRequestPrompts: Record<string, unknown>
+): Promise<T> {
+  let prompts: FormPromptOptions[] = [];
+
+  for (const [key, value] of Object.entries(inputRequestPrompts)) {
+    const prompt: FormPromptOptions = {
+      name: key,
+      message: key,
+    };
+
+    if (
+      typeof value === "object" &&
+      typeof (value as any).default != "undefined"
+    ) {
+      prompt.initial = (value as any).default;
+    }
+
+    prompts.push(prompt);
+  }
+
+  const formPrompt = new Form({
+    name: "prompts",
+    message: "Please Fill In Request Prompts:",
+    choices: prompts,
+  });
+
+  const promptData = await formPrompt.run();
+
+  return promptData;
+}
+
 export const handler = async (argv) => {
   if (!argv.filePath) {
     console.log("No restfile specified");
     return;
   }
 
-  let restfile: InputRestFile;
+  const restfilePath = path.join(process.cwd(), argv.filePath);
+
+  let inputRestfile: InputRestfile;
 
   try {
-    restfile = await asyncLoadAll(
-      await fs.readFile(path.join(process.cwd(), argv.filePath), "utf-8")
-    );
+    inputRestfile = await Restfile.load(restfilePath);
   } catch (e) {
-    console.log(`Error reading ${argv.filePath}: ${e.message}`);
+    console.log(`Error loading restfile: ${e.message}`);
     return;
   }
 
-  const errors = validate(restfile);
-
-  if (errors.length > 0) {
-    console.log(`Invalid restfile:\n\n${JSON.stringify(errors, null, 2)}`);
-
-    return;
-  }
-
-  if (argv.env && !restfile[0].envs.includes(argv.env)) {
+  if (argv.env && !inputRestfile[0].envs.includes(argv.env)) {
     console.log(
-      `Invalid env for restfile: ${argv.env} (${restfile[0].envs.join(", ")})`
+      `Invalid env for restfile: ${argv.env} (${inputRestfile[0].envs.join(
+        ", "
+      )})`
     );
 
     return;
   }
 
-  const parsedRestfile = parse(restfile, argv.env, {
+  const secretData = {
     secretToken: "secretToken",
-  });
+  };
 
-  const restfileObj = parsedRestfile;
+  const restfile = Restfile.parse(inputRestfile, argv.env, secretData);
 
-  const requestIds = restfileObj.requests.map((r) => r.id);
-
-  if (requestIds.length === 0) {
+  if (restfile.requestIds.length === 0) {
     console.log("No requests defined");
     return;
   }
@@ -99,30 +119,23 @@ export const handler = async (argv) => {
     const prompt = new Select({
       name: "request",
       message: "Select A Request",
-      choices: requestIds,
+      choices: restfile.requestIds,
     });
 
     requestId = await prompt.run();
   }
 
-  let request = restfileObj.requests.find((r) => r.id === requestId);
+  const inputRestFileObj = InputRestfileObject.from(inputRestfile);
+  let inputRequest = inputRestFileObj.request(requestId);
 
-  if (request.prompts) {
-    const promptData = await runRequestPrompts(request);
+  if (inputRequest) {
+    let promptData = {};
+    if (inputRequest.prompts) {
+      promptData = await runRequestPrompts(inputRequest.prompts);
+    }
 
-    const restfileObjSecondPass = parse(
-      restfile,
-      argv.env,
-      {
-        secretToken: "secretToken",
-      },
-      promptData
-    );
+    const request = restfile.request(requestId, promptData);
 
-    request = restfileObjSecondPass.requests.find((r) => r.id === requestId);
-  }
-
-  if (request) {
     console.log(request.http);
 
     if (argv.dry) {
@@ -163,7 +176,7 @@ export const handler = async (argv) => {
     console.log(
       [
         `Request not found: ${requestId}`,
-        `Available Requests:\n\n${requestIds.join("\n")}`,
+        `Available Requests:\n\n${restfile.requestIds.join("\n")}`,
       ].join("\n")
     );
   }

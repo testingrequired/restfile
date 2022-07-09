@@ -1,8 +1,13 @@
 import { loadAll } from "js-yaml";
-import { Collection, Data, Document, Request, InputRestFile } from "./types";
+import {
+  InputRestfile,
+  RestfileDataDocument,
+  RestfileInfoDocument,
+  RestfileRequestDocument,
+} from ".";
 
 export function asyncLoadAll(content: string) {
-  return new Promise<InputRestFile>((resolve, reject) => {
+  return new Promise<InputRestfile>((resolve, reject) => {
     try {
       const docs: Document[] = [];
 
@@ -11,9 +16,9 @@ export function asyncLoadAll(content: string) {
       });
 
       const [document, data, ...requests] = docs as unknown as [
-        Collection,
-        Data,
-        ...Request[]
+        RestfileInfoDocument,
+        RestfileDataDocument,
+        ...RestfileRequestDocument[]
       ];
 
       resolve([document, data, ...requests]);
