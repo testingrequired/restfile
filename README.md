@@ -2,23 +2,13 @@
 
 [![restfile](https://github.com/testingrequired/restfile-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/testingrequired/restfile-ts/actions/workflows/ci.yml)
 
-A collection of REST requests in a file format designed to be easy to read/write.
-
-## Goals
-
-- Easy to read and write. Inspired by markdown.
-- Writing REST request strings versus a request object
-- Explicit. Variables, secrets and prompts must be declared before usage.
-- Source control friendly. Diffs should be easy to understand.
-- DSL as flat as possible. Less mistakes and frustrations by avoid nested structures.
+restfile is a specification for storing REST requests in an easy to read and write file format.
 
 ## Features
 
-- [Variables](#variables)
-- [Environments](#environments)
-- [Prompts](#prompts)
-- [Secrets](#secrets)
-- Templating
+- Easy to read and write
+- Easy to diff for source control
+- Templating such as [variables](#variables) with [environment](#environments) based values, [prompt/input](#prompts) data, and [secrets](#secrets)
 
 ### Variables
 
@@ -242,10 +232,6 @@ interface RestfileInfoDocument {
  * Input variables (shared and environment) and secrets used in requests
  */
 type RestfileDataDocument = Record<string, unknown>;
-
-type RestfileRequestPrompt = {
-  default: string;
-};
 
 /**
  * An individual REST request
