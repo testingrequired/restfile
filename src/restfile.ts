@@ -390,16 +390,3 @@ export class Restfile {
     return envData;
   }
 }
-
-const inputRestfile: InputRestfile = [
-  {
-    name: "",
-    description: "",
-    envs: [],
-  },
-  {
-    testing: "yes",
-  },
-];
-
-const rf = new Restfile(inputRestfile, "prod");

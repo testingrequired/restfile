@@ -224,9 +224,121 @@ tests:
 
 ```
 
+## Types
+
+### Input Restfile
+
+```typescript
+/**
+ * Information about the restfile. Name, description, what environments exist
+ */
+interface RestfileInfoDocument {
+  name: string;
+  description?: string;
+  envs: string[];
+}
+
+/**
+ * Input variables (shared and environment) and secrets used in requests
+ */
+type RestfileDataDocument = Record<string, unknown>;
+
+type RestfileRequestPrompt = {
+  default: string;
+};
+
+/**
+ * An individual REST request
+ *
+ * Variable, secret and prompt placeholders are present.
+ */
+interface RestfileRequestDocument {
+  id: string;
+  description?: string;
+  prompts?: Record<string, string | { default: string }>;
+  headers?: Record<string, string>;
+  body?: Record<string, any> | string;
+  http: string;
+  tests?: Record<string, string>;
+}
+
+/**
+ * The format of the input YAML file
+ *
+ * It's a tuple of the info document, data document, and the remaining
+ * documents being requests.
+ */
+type InputRestfile = [
+  RestfileInfoDocument,
+  RestfileDataDocument,
+  ...RestfileRequestDocument[]
+];
+```
+
+### Parsed Restfile
+
+```typescript
+interface Restfile {
+  name: string;
+  description: string;
+  envs: string[];
+  env: string;
+  data: Record<string, unknown>;
+  requestIds: string[];
+
+  new (
+    inputRestfile: InputRestfile,
+    env?: string,
+    secretData?: Record<string, string>
+  ): Restfile;
+
+  request(id: string, promptData?: Record<string, string>): RestfileRequest;
+}
+```
+
+## Reference Implementation
+
+This repository also contains the reference implementation (written in javascript) for parsing restfiles.
+
+### Installation
+
+1. Clone down this repo. This package isn't published at this time.
+2. Run `npm ci`
+
+### Usage
+
+```typescript
+import {
+  InputRestfile,
+  Restfile,
+  executeRequest,
+} from "@testingrequired/restfile";
+
+let inputRestfile: InputRestfile;
+
+try {
+  inputRestfile = await Restfile.load("...");
+} catch (e) {
+  console.log(`Error loading restfile: ${e.message}`);
+  return;
+}
+
+const env = "local";
+
+const secretData = {
+  secretToken: "secretToken",
+};
+
+const restfile = Restfile.parse(inputRestfile, env, secretData);
+
+const request = restfile.request(requestId);
+
+const response = await executeRequest(request);
+```
+
 ## CLI
 
-The CLI is an example implementation of a restfile client.
+The CLI is an example implementation of a restfile client and a consumer of the reference implementation.
 
 ### Installation
 
