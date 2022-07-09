@@ -1,7 +1,15 @@
 export { parseHttp, buildHttp } from "./parse";
-export { validate } from "./validate";
 export {
   executeRequest,
   mapFetchResponseToHTTPResponseString,
   runRequestTests,
 } from "./execute";
+
+export {
+  InputRestfile,
+  RestfileInfoDocument,
+  RestfileDataDocument,
+  RestfileRequestDocument,
+  Restfile,
+  RestfileRequest,
+} from "./restfile";

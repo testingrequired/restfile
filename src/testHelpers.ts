@@ -1,4 +1,4 @@
-import { InputRestfile, RestfileRequestDocument } from "./new_interface";
+import { InputRestfile, RestfileRequestDocument } from ".";
 
 export function validRestFile(envs: string[]): InputRestfile {
   const collection = { name: "Test", envs };

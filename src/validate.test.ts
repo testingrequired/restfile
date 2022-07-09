@@ -1,4 +1,4 @@
-import { InputRestfile } from "./new_interface";
+import { InputRestfile } from ".";
 import { validRestFile } from "./testHelpers";
 import { validate } from "./validate";
 

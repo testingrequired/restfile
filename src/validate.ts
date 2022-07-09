@@ -1,4 +1,4 @@
-import { InputRestfile, RestfileInfoDocument } from "./new_interface";
+import { InputRestfile, RestfileInfoDocument } from ".";
 import {
   varTemplatePattern,
   secretGlyph,

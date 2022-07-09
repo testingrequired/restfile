@@ -5,11 +5,10 @@ import {
   HttpZRequestModel,
   HttpZResponseModel,
 } from "http-z";
-import { buildHttp, parseHttp } from ".";
+import { buildHttp, parseHttp, RestfileRequest } from ".";
 import fetch, { Response } from "node-fetch";
 import { sortObject } from "./utils";
 import expect from "expect";
-import { RestfileRequest } from "./new_interface";
 
 export function executeRequest(request: RestfileRequest): Promise<Response> {
   const httpObj = parseHttp<HttpZRequestModel>(request.http);

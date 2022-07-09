@@ -1,5 +1,5 @@
 import httpz, { HttpZRequestModel, HttpZResponseModel } from "http-z";
-import { InputRestfile, RestfileRequestDocument } from "./new_interface";
+import { InputRestfile, RestfileRequestDocument } from ".";
 
 export const varGlyph = "$";
 export const secretGlyph = "!";

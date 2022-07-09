@@ -1,16 +1,12 @@
 import { HttpZRequestModel, HttpZResponseModel } from "http-z";
-import * as fs from "node:fs/promises";
 import path from "node:path";
 import repl from "node:repl";
 import { Argv } from "yargs";
 import {
   executeRequest,
-  InputRestFile,
   mapFetchResponseToHTTPResponseString,
-  parse,
   parseHttp,
   runRequestTests,
-  validate,
 } from "../..";
 import {
   InputRestfile,
@@ -18,8 +14,7 @@ import {
   Restfile,
   RestfileRequest,
   RestfileRequestDocument,
-} from "../../new_interface";
-import { Request } from "../../types";
+} from "../../restfile";
 import { asyncLoadAll } from "../../yaml";
 
 export const command = "repl <filePath>";
@@ -80,7 +75,7 @@ export const handler = async (argv: Arguments) => {
   });
 
   let lastRequestString: string;
-  let lastRequest: Request;
+  let lastRequest: RestfileRequestDocument;
   let lastRequestResponseString: string;
   let lastResponseBodyString: string;
 

@@ -1,5 +1,12 @@
 import { HttpZRequestModel } from "http-z";
-import { buildHttp, parseHttp } from "./parse";
+import {
+  buildHttp,
+  parseHttp,
+  promptTemplatePattern,
+  secretGlyph,
+  secretTemplatePattern,
+  varTemplatePattern,
+} from "./parse";
 import { asyncLoadAll } from "./yaml";
 import * as fs from "fs/promises";
 import { validate, ValidationError } from "./validate";
@@ -119,23 +126,6 @@ export class Restfile {
   #data: Record<string, string>;
   #secrets: Record<string, string>;
 
-  static readonly #VAR_GLYPH: string = "$";
-  static readonly #SECRET_GLYPH: string = "!";
-  static readonly #PROMPT_GLYPH: string = "?";
-
-  static readonly #VAR_TEMPLATE_PATTERN = new RegExp(
-    `\{\{\\${Restfile.#VAR_GLYPH} (.*?)\}\}`,
-    "g"
-  );
-  static readonly #SECRET_TEMPLATE_PATTERN = new RegExp(
-    `\{\{\\${Restfile.#SECRET_GLYPH} (.*?)\}\}`,
-    "g"
-  );
-  static readonly #PROMPT_TEMPLATE_PATTERN = new RegExp(
-    `\{\{\\${Restfile.#PROMPT_GLYPH} (.*?)\}\}`,
-    "g"
-  );
-
   static async load(
     path: string,
     options: RestfileLoadOptions = {
@@ -243,23 +233,17 @@ export class Restfile {
       http = buildHttp(httpObj);
     }
 
-    for (const [pattern, key] of http.matchAll(
-      Restfile.#VAR_TEMPLATE_PATTERN
-    )) {
+    for (const [pattern, key] of http.matchAll(varTemplatePattern)) {
       http = http.split(pattern).join(this.#data[key]);
     }
 
-    for (const [pattern, key] of http.matchAll(
-      Restfile.#SECRET_TEMPLATE_PATTERN
-    )) {
+    for (const [pattern, key] of http.matchAll(secretTemplatePattern)) {
       http = http.split(pattern).join(this.#secrets[key]);
     }
 
     if (prompts) {
       // Replace template prompts in request.http
-      for (const httpMatches of http.matchAll(
-        Restfile.#PROMPT_TEMPLATE_PATTERN
-      )) {
+      for (const httpMatches of http.matchAll(promptTemplatePattern)) {
         if (httpMatches?.length > 1) {
           const pattern = httpMatches[0];
           const promptKey = httpMatches[1];
@@ -289,17 +273,13 @@ export class Restfile {
         const test = requestDocument.tests[testId];
 
         // Replace template variables in request.http
-        for (const [pattern, key] of test.matchAll(
-          Restfile.#VAR_TEMPLATE_PATTERN
-        )) {
+        for (const [pattern, key] of test.matchAll(varTemplatePattern)) {
           requestDocument.tests[testId] = requestDocument.tests[testId]
             .split(pattern)
             .join(this.#data[key]);
         }
 
-        for (const [pattern, key] of test.matchAll(
-          Restfile.#SECRET_TEMPLATE_PATTERN
-        )) {
+        for (const [pattern, key] of test.matchAll(secretTemplatePattern)) {
           debugger;
 
           requestDocument.tests[testId] = requestDocument.tests[testId]
@@ -309,9 +289,7 @@ export class Restfile {
           debugger;
         }
 
-        for (const matches of test.matchAll(
-          Restfile.#PROMPT_TEMPLATE_PATTERN
-        )) {
+        for (const matches of test.matchAll(promptTemplatePattern)) {
           if (matches?.length > 1) {
             const pattern = matches[0];
             const promptKey = matches[1];
@@ -392,7 +370,7 @@ export class Restfile {
 
     Object.entries(data).forEach(([key, value]) => {
       // Skip Secrets
-      if (key.endsWith(Restfile.#SECRET_GLYPH)) {
+      if (key.endsWith(secretGlyph)) {
         return;
       }
 

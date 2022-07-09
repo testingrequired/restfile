@@ -7,11 +7,7 @@ import {
   runRequestTests,
 } from "../..";
 
-import {
-  InputRestfile,
-  InputRestfileObject,
-  Restfile,
-} from "../../new_interface";
+import { InputRestfile, InputRestfileObject, Restfile } from "../../restfile";
 
 export const command = "run <filePath> [requestId]";
 

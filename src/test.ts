@@ -1,6 +1,6 @@
 import * as path from "path";
 import expect from "expect";
-import { Restfile } from "./new_interface";
+import { Restfile } from ".";
 
 describe("Integration", () => {
   const specFile = "spec.restfile.yml";

@@ -1,4 +1,4 @@
-import { InputRestfile } from "./new_interface";
+import { InputRestfile } from ".";
 import { parseData, parseSecrets } from "./parse";
 import { validRestFile } from "./testHelpers";
 

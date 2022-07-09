@@ -4,7 +4,7 @@ import {
   RestfileDataDocument,
   RestfileInfoDocument,
   RestfileRequestDocument,
-} from "./new_interface";
+} from ".";
 
 export function asyncLoadAll(content: string) {
   return new Promise<InputRestfile>((resolve, reject) => {
