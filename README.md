@@ -193,7 +193,7 @@ http: |+
 
 #### Templating
 
-Templating allows variables, secrets, prompts to be used in request `http` strings: `{{$ varName}}`, `{{! secretName}}`, `{{? promptName}}`
+Templating allows variables, secrets, prompts to be used in `request.http`: `{{$ varName}}`, `{{! secretName}}`, `{{? promptName}}`
 
 <!-- prettier-ignore -->
 ```yaml
@@ -240,3 +240,7 @@ Having the multiple document format allows for flatter
 #### Multiline String Support
 
 Writing HTTP request and response message strings is at the core of this idea. While other formats support multiline strings they were combersome for writing HTTP message strings. Using YAML's `|+` this becomes much easier depspite other tradeoffs YAML has.
+
+## Implementation?
+
+The focus is on a format that could and will have implementations written in many languages.
