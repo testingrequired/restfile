@@ -75,23 +75,27 @@ interface InformationDocument {
 }
 ```
 
+<!-- prettier-ignore -->
+```yaml
+name: Example User API
+description: Descriptions are optional but helpful.
+envs: [local, prod]
+```
+
 ### Data
 
-The `data` document is the second document.
+The `data` document is the second document. It allows you to define variables and [secrets](#secrets) available for templating in requests.
 
 ```typescript
 type DataDocument = Record<string, unknown>;
 ```
 
-It allows you to define variables `{{$ varName}}` and secrets `{{! secretName}}` avalible for templating in requests.
-
 <!-- prettier-ignore -->
 ```yaml
-name: Data Example
-envs: []
----
-baseUrl: http://example.com
----
+baseUrl: http://localhost
+userId: 99
+
+secretAccessToken!: !!str
 ```
 
 #### Environmental Data
@@ -100,9 +104,13 @@ Variables can also be assigned enviroment based values.
 
 <!-- prettier-ignore -->
 ```yaml
+# Information Document
+
 name: Data Example
 envs: [local, prod]
 ---
+# Data Document
+
 baseUrl: !!str # You can also use an empty string e.g. ""
 
 local:
@@ -112,9 +120,7 @@ prod:
 ---
 ```
 
-- Environment name keys defining variable values but be defined in the environment names `envs` in the `information` document
-
-Otherwise this will cause validation errors.
+Environment name keys defining variable values but be defined in the environment names `envs` in the `information` document. Otherwise this will cause validation errors.
 
 <!-- prettier-ignore -->
 ```yaml
@@ -132,9 +138,7 @@ invalidEnv:
 ---
 ```
 
-- Variables referenced in environment based values must be defined at the root of the `data` document
-
-Otherwise this will cause validation errors.
+Variables referenced in environment based values must be defined at the root of the `data` document. Otherwise this will cause validation errors.
 
 <!-- prettier-ignore -->
 ```yaml
