@@ -8,7 +8,7 @@ restfile is a specification for storing REST requests in an easy to read and wri
 
 - Easy to read and write
 - Easy to diff for source control
-- Templating such as [variables](#variables) with [environment](#environments) based values, [prompt/input](#prompts) data, and [secrets](#secrets)
+- [Templating](#templating) such as variables with [environment](#environmental-data) based values, [prompt]() values, and [secrets](#secrets)
 
 ## Format
 
@@ -130,8 +130,6 @@ token!: !!str
 
 ---
 id: example
-prompts:
-  query: !!str
 http: |+
   GET https://example.com HTTP/1.1
   Authorization: Bearer {{! token}}
@@ -148,8 +146,6 @@ interface RequestDocument {
   id: string;
   description?: string;
   prompts?: Record<string, string | { default: string }>;
-  headers?: Record<string, string>;
-  body?: Record<string, any> | string;
   http: string;
   tests?: Record<string, string>;
 }
@@ -172,6 +168,27 @@ http: |+
 
 ```
 
+#### Prompts
+
+Prompts are values inputed by the user when the request runs. Prompts referenced in `request.http` must be defined in `request.prompts`. Prompts defined in `request.prompts` must also be referenced in `request.http`. This will cause validation errors otherwise.
+
+<!-- prettier-ignore -->
+```yaml
+name: Prompts Example
+envs: []]
+---
+
+---
+id: example
+prompts:
+  token: !!str
+http: |+
+  GET https://example.com HTTP/1.1
+  Authorization: Bearer {{? token}}
+
+
+```
+
 #### Templating
 
 Templating allows variables, secrets, prompts to be used in request `http` strings: `{{$ varName}}`, `{{! secretName}}`, `{{? promptName}}`
@@ -186,5 +203,26 @@ baseUrl: http://example.com/
 id: ip
 http: |+
   GET {{$baseUrl}} HTTP/1.1
+
+```
+
+#### Tests
+
+Tests are expected HTTP response message strings. Actual assertion logic for tests needs to be defined. The reference implementation will check protocol version, status code, status message and body for equality. Headers that are defined in the test are tested. Headers in the actual response not found in the test are ignored.
+
+<!-- prettier-ignore -->
+```yaml
+name: Testing Example
+envs: []
+---
+baseUrl: http://example.com/
+---
+id: ip
+http: |+
+  GET {{$baseUrl}} HTTP/1.1
+
+tests:
+  shouldBeOk: |+
+    HTTP/1.1 200 OK
 
 ```
