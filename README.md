@@ -2,7 +2,7 @@
 
 [![restfile](https://github.com/testingrequired/restfile-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/testingrequired/restfile-ts/actions/workflows/ci.yml)
 
-restfile is a specification for storing REST requests in an easy to read and write file format.
+restfile is a specification for storing HTTP requests in an easy to read and write file format.
 
 ## Features
 
