@@ -131,13 +131,14 @@ All remaining documents in the restfile are request doucments. Requests require 
 
 <!-- prettier-ignore -->
 ```yaml
-name: Example Request
+name: Example
 description: Show what a bare but complete restfile and request look like
 envs: []
 ---
 
 ---
-id: ip
+# Example Request
+id: get-ip
 http: |+
   GET https://get.geojs.io/v1/ip.json HTTP/1.1
 
