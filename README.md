@@ -28,7 +28,7 @@ description: Descriptions are optional but helpful.
 envs: [local, prod]
 ---
 # Data Document
-baseUrl: !!str
+baseUrl: !!str # You can also use an empty string e.g. ""
 
 local:
   baseUrl: http://localhost
@@ -59,7 +59,7 @@ The `data` document is the second document.
 type DataDocument = Record<string, unknown>;
 ```
 
-It allows you to define variables and secrets to template into requests.
+It allows you to define variables `{{$ varName}}` and secrets `{{! secretName}}` avalible for templating in requests.
 
 <!-- prettier-ignore -->
 ```yaml
@@ -125,7 +125,7 @@ prod:
 
 #### Secrets
 
-Secrets are variables that are populated at runtime. The difference from prompts is that secrets aren't provided by the user but programatically e.g. AWS Secrets Manager.
+Secrets `{{! secretName}}` are variables that are populated at runtime. They must be defined in the `data` document with a name appended with `!` e.g. `token!` in data, `{{! token}}` while templating
 
 <!-- prettier-ignore -->
 ```yaml
@@ -141,6 +141,8 @@ http: |+
 
 
 ```
+
+The difference from prompts is that secrets aren't provided by the user but programatically e.g. AWS Secrets Manager.
 
 ### Requests
 
