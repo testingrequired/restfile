@@ -130,10 +130,9 @@ Secrets are variables that are populated at runtime. The difference from prompts
 <!-- prettier-ignore -->
 ```yaml
 name: Secrets Example
-envs: []]
+envs: []
 ---
 token!: !!str
-
 ---
 id: example
 http: |+
@@ -171,6 +170,7 @@ envs: []
 id: get-ip
 http: |+
   GET https://get.geojs.io/v1/ip.json HTTP/1.1
+
 
 ```
 
@@ -210,6 +210,7 @@ id: ip
 http: |+
   GET {{$baseUrl}} HTTP/1.1
 
+
 ```
 
 #### Tests
@@ -230,6 +231,7 @@ http: |+
 tests:
   shouldBeOk: |+
     HTTP/1.1 200 OK
+
 
 ```
 
