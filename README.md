@@ -24,23 +24,39 @@ A restfile is a [multi-document](https://yaml.org/spec/1.2.1/#marker/directives%
 <!-- prettier-ignore -->
 ```yaml
 # Information Document
-name: Bare Example
+
+name: Example User API
 description: Descriptions are optional but helpful.
-envs: []
+envs: [local, prod]
 ---
 # Data Document
+
+baseUrl: !!str #Variable
+secretAccessToken!: !!str #Secret
+
+# Environmental Values
+local:
+  baseUrl: http://localhost
+prod:
+  baseUrl: https://api.insertcompanyname.com
 ---
 # Request Document
-id: first-request
+id: get-users
+description: Get all users
 http: |+
-  GET http://example.com HTTP/1.1
+  GET {{$ baseUrl}}/users HTTP/1.1
+  Authorization: Bearer {{! secretAccessToken}}
 
 
 ---
 # Request Document
-id: second-request
+id: get-user-by-id
+description: Get user by id
+prompts:
+  userId: !!str
 http: |+
-  GET https://google.com HTTP/1.1
+  GET {{$ baseUrl}}/users/{{? userId}} HTTP/1.1
+  Authorization: Bearer {{! secretAccessToken}}
 
 
 ---
