@@ -28,12 +28,6 @@ description: Descriptions are optional but helpful.
 envs: [local, prod]
 ---
 # Data Document
-baseUrl: !!str # You can also use an empty string e.g. ""
-
-local:
-  baseUrl: http://localhost
-prod:
-  baseUrl: http://example.com
 ---
 # Request Document/s
 ...
@@ -79,7 +73,7 @@ Variables can also be assigned enviroment based values.
 name: Data Example
 envs: []
 ---
-baseUrl: !!str
+baseUrl: !!str # You can also use an empty string e.g. ""
 
 local:
   baseUrl: http://localhost
