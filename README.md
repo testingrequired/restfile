@@ -227,3 +227,15 @@ tests:
     HTTP/1.1 200 OK
 
 ```
+
+### Why YAML
+
+YAML has a number of key features that aligned with the goals of the spec.
+
+#### Multi Document Files
+
+Having the multiple document format allows for flatter
+
+#### Multiline String Support
+
+Writing HTTP request and response message strings is at the core of this idea. While other formats support multiline strings they were combersome for writing HTTP message strings. Using YAML's `|+` this becomes much easier depspite other tradeoffs YAML has.
