@@ -204,6 +204,23 @@ http: |+
 
 ```
 
+The `request.http` value must be a valid HTTP request message or an error will be thrown during request execution. It's particularly sensitive around newlines after the headers and body.
+
+As part of the spec these requirements should be looser allowing for requests like this:
+
+<!-- prettier-ignore -->
+```yaml
+name: Example
+envs: []
+---
+
+---
+# Example Request
+id: get-ip
+# This will error currently because of the lack of newlines
+http: GET https://get.geojs.io/v1/ip.json HTTP/1.1
+```
+
 #### Prompts
 
 Prompts are values inputed by the user when the request runs.
@@ -243,7 +260,7 @@ baseUrl: http://example.com/
 ---
 id: ip
 http: |+
-  GET {{$baseUrl}} HTTP/1.1
+  GET {{$ baseUrl}} HTTP/1.1
 
 
 ```
@@ -261,7 +278,7 @@ baseUrl: http://example.com/
 ---
 id: ip
 http: |+
-  GET {{$baseUrl}} HTTP/1.1
+  GET {{$ baseUrl}} HTTP/1.1
 
 tests:
   shouldBeOk: |+
