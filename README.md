@@ -8,7 +8,7 @@ restfile is a specification for storing REST requests in an easy to read and wri
 
 - HTTP request messages as [requests](#requests)
 - HTTP response messages as [tests](#tests)
-- [Templating](#templating) such as variables with [environment](#environmental-data) based values, [prompt]() values, and [secrets](#secrets)
+- [Templating](#templating) in [requests](#requests) with [variables](#environmental-data), [prompts](#prompts), and [secrets](#secrets)
 
 ## Goals
 
