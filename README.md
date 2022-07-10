@@ -119,7 +119,7 @@ Otherwise this will cause validation errors.
 <!-- prettier-ignore -->
 ```yaml
 name: Data Example
-envs: []
+envs: [local, prod]
 ---
 baseUrl: !!str
 
