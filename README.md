@@ -37,9 +37,23 @@ prod:
 
 The `information` document is the first document in the restfile. It's required and defines the `name`, `description` and a list of enviroment names `envs`.
 
+```typescript
+interface InformationDocument {
+  name: string;
+  description?: string;
+  envs: string[];
+}
+```
+
 ### Data
 
-The `data` document is the second document. It allows you to define variables and secrets to template into requests.
+The `data` document is the second document.
+
+```typescript
+type DataDocument = Record<string, unknown>;
+```
+
+It allows you to define variables and secrets to template into requests.
 
 <!-- prettier-ignore -->
 ```yaml
@@ -127,7 +141,21 @@ http: |+
 
 ### Requests
 
-All remaining documents in the restfile are request doucments. Requests require both an `id`, and `http` request string at a minimum.
+All remaining documents in the restfile are request doucments.
+
+```typescript
+interface RequestDocument {
+  id: string;
+  description?: string;
+  prompts?: Record<string, string | { default: string }>;
+  headers?: Record<string, string>;
+  body?: Record<string, any> | string;
+  http: string;
+  tests?: Record<string, string>;
+}
+```
+
+Requests require both an `id`, and `http` request string at a minimum.
 
 <!-- prettier-ignore -->
 ```yaml
