@@ -12,9 +12,10 @@ restfile is a specification for storing HTTP requests in an easy to read and wri
 
 ## Goals
 
-- Easy to read, write & diff
+- Easy to read, write
 - Flatter structure
 - Limited templating syntax
+- Diff friendly
 
 ## Format
 
@@ -25,12 +26,25 @@ A restfile is a [multi-document](https://yaml.org/spec/1.2.1/#marker/directives%
 # Information Document
 name: Bare Example
 description: Descriptions are optional but helpful.
-envs: [local, prod]
+envs: []
 ---
 # Data Document
 ---
-# Request Document/s
-...
+# Request Document
+id: first-request
+http: |+
+  GET http://example.com HTTP/1.1
+
+
+---
+# Request Document
+id: second-request
+http: |+
+  GET https://google.com HTTP/1.1
+
+
+---
+# Addition Request Documents...
 ```
 
 ### Information
@@ -71,7 +85,7 @@ Variables can also be assigned enviroment based values.
 <!-- prettier-ignore -->
 ```yaml
 name: Data Example
-envs: []
+envs: [local, prod]
 ---
 baseUrl: !!str # You can also use an empty string e.g. ""
 
@@ -82,7 +96,9 @@ prod:
 ---
 ```
 
-Environment name keys defining variable values but be defined in the environment names `envs` in the `infomation` document. This will cause validation errors otherwise.
+- Environment name keys defining variable values but be defined in the environment names `envs` in the `information` document
+
+Otherwise this will cause validation errors.
 
 <!-- prettier-ignore -->
 ```yaml
@@ -100,12 +116,14 @@ invalidEnv:
 ---
 ```
 
-Variables referenced in environment based values must be defined at the root of the `data` document. This will cause validation errors otherwise.
+- Variables referenced in environment based values must be defined at the root of the `data` document
+
+Otherwise this will cause validation errors.
 
 <!-- prettier-ignore -->
 ```yaml
 name: Data Example
-envs: []
+envs: [local, prod]
 ---
 baseUrl: !!str
 
@@ -172,12 +190,17 @@ http: |+
 
 #### Prompts
 
-Prompts are values inputed by the user when the request runs. Prompts referenced in `request.http` must be defined in `request.prompts`. Prompts defined in `request.prompts` must also be referenced in `request.http`. This will cause validation errors otherwise.
+Prompts are values inputed by the user when the request runs.
+
+- Prompts referenced in `request.http` must be defined in `request.prompts`
+- Prompts defined in `request.prompts` must also be referenced in `request.http`
+
+Otherwise this will cause validation errors.
 
 <!-- prettier-ignore -->
 ```yaml
 name: Prompts Example
-envs: []]
+envs: []
 ---
 
 ---
@@ -237,7 +260,7 @@ YAML has a number of key features that aligned with the goals of the spec.
 
 #### Multi Document Files
 
-Having the multiple document format allows for flatter
+Having the multiple document format allows for flatter structure and syntax. Less indentation should make it easier to write and less prone to syntax errors.
 
 #### Multiline String Support
 
