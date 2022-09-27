@@ -130,6 +130,7 @@ export class Restfile {
     path: string,
     options: RestfileLoadOptions = {
       encoding: "utf-8",
+      skipValidation: false
     }
   ): Promise<InputRestfile> {
     const inputRestFile = await asyncLoadAll(

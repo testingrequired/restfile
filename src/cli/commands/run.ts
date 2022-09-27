@@ -6,6 +6,7 @@ import {
   mapFetchResponseToHTTPResponseString,
   runRequestTests,
 } from "../..";
+import { parseSecretKeys } from "../../parse";
 
 import { InputRestfile, InputRestfileObject, Restfile } from "../../restfile";
 
@@ -41,6 +42,12 @@ export const builder = (yargs) =>
       type: "boolean",
       describe: "Runs tests",
       default: false,
+    })
+    .option("secrets", {
+      type: "object",
+      alias: "s",
+      describe: "Pass secrets to request",
+      default: {}
     });
 
 async function runRequestPrompts<T = any>(
@@ -102,11 +109,36 @@ export const handler = async (argv) => {
     return;
   }
 
-  const secretData = {
-    secretToken: "secretToken",
-  };
+  const missingSecretKeys = parseSecretKeys(inputRestfile)
+    .map(key => key.substring(0, key.length - 1))
+    .filter(key => !Object.keys(argv.secrets).includes(key));
 
-  const restfile = Restfile.parse(inputRestfile, argv.env, secretData);
+  let prompts: FormPromptOptions[] = [];
+
+  for (const key of missingSecretKeys) {
+    const prompt: FormPromptOptions = {
+      name: key,
+      message: key,
+    };
+
+    prompts.push(prompt);
+  }
+
+  let promptData: Record<string, string> = {}
+
+  if (prompts.length > 0) {
+    const formPrompt = new Form({
+      name: "prompts",
+      message: "Please Fill In Secrets:",
+      choices: prompts,
+    });
+  
+    promptData = await formPrompt.run().then( () => process.stdin.resume() );
+  }
+  
+  const secrets = Object.assign({}, argv.secrets, promptData);
+
+  const restfile = Restfile.parse(inputRestfile, argv.env, secrets);
 
   if (restfile.requestIds.length === 0) {
     console.log("No requests defined");
@@ -142,35 +174,39 @@ export const handler = async (argv) => {
       return;
     }
 
-    const response = await executeRequest(request);
+    try {
+      const response = await executeRequest(request);
 
-    const responseBody = await response.text();
+      const responseBody = await response.text();
 
-    const httpResponseString = await mapFetchResponseToHTTPResponseString(
-      response,
-      responseBody
-    );
-
-    console.log(httpResponseString);
-
-    if (argv.test) {
-      if (!request.tests) {
-        console.log("Request has no tests");
-        return;
-      }
-
-      const testErrors: Record<string, Error> = runRequestTests(
-        request,
-        httpResponseString
+      const httpResponseString = await mapFetchResponseToHTTPResponseString(
+        response,
+        responseBody
       );
 
-      if (Object.keys(testErrors).length > 0) {
-        console.log(
-          `Test Errors:\n\n${Object.entries(testErrors)
-            .map(([testId, e]) => `${testId}: ${e.message}`)
-            .join("\n")}`
+      console.log(httpResponseString);
+
+      if (argv.test) {
+        if (!request.tests) {
+          console.log("Request has no tests");
+          return;
+        }
+
+        const testErrors: Record<string, Error> = runRequestTests(
+          request,
+          httpResponseString
         );
+
+        if (Object.keys(testErrors).length > 0) {
+          console.log(
+            `Test Errors:\n\n${Object.entries(testErrors)
+              .map(([testId, e]) => `${testId}: ${e.message}`)
+              .join("\n")}`
+          );
+        }
       }
+    } catch (e) {
+      console.log(`An unexpected error occured while executing the request: ${e.message}`)
     }
   } else {
     console.log(
