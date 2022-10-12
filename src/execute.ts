@@ -9,9 +9,13 @@ import { buildHttp, parseHttp, RestfileRequest } from ".";
 import fetch, { Response } from "node-fetch";
 import { sortObject } from "./utils";
 import expect from "expect";
+import { refTemplatePattern } from "./parse";
+import ClientOAuth2 from 'client-oauth2';
 
-export function executeRequest(request: RestfileRequest): Promise<Response> {
+export async function executeRequest(request: RestfileRequest): Promise<Response> {
+
   const httpObj = parseHttp<HttpZRequestModel>(request.http);
+
 
   return fetch(httpObj.target, {
     method: httpObj.method,

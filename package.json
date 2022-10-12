@@ -34,6 +34,7 @@
     "typescript": "^4.6.2"
   },
   "dependencies": {
+    "client-oauth2": "^4.3.3",
     "enquirer": "^2.3.6",
     "http-z": "^6.1.2",
     "js-yaml": "^4.1.0",

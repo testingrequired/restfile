@@ -1,4 +1,5 @@
 import { InputRestfile } from ".";
+import { RestfileRequestAuth, RestfileRequestAuthType } from "./restfile";
 import { validRestFile } from "./testHelpers";
 import { validate } from "./validate";
 
@@ -74,6 +75,14 @@ describe("validate", () => {
       headers: {
         another: "{{$ doesntExist}}",
       },
+      auth: {
+        type: "oauth2",
+        grant: "client",
+        accessTokenUri: "{{$ accessTokenUri}}",
+        clientId: "{{$ clientId}}",
+        clientSecret: "{{$ clientSecret}}",
+        scopes: "{{$ scopes}}"
+      },
       body: "{{$ doesntExist}} {{$ doesntExist}}",
       http: `GET http://example.com/1\nCustom: {{$ doesntExist}}`,
       tests: {
@@ -89,6 +98,22 @@ describe("validate", () => {
       {
         key: "requests.invalidRequest.headers.another",
         message: "Reference to undefined variable: {{$ doesntExist}}",
+      },
+      {
+        key: "requests.invalidRequest.auth.accessTokenUri",
+        message: "Referencing undefined variable: {{$ accessTokenUri}}",
+      },
+      {
+        key: "requests.invalidRequest.auth.clientId",
+        message: "Referencing undefined variable: {{$ clientId}}",
+      },
+      {
+        key: "requests.invalidRequest.auth.clientSecret",
+        message: "Referencing undefined variable: {{$ clientSecret}}",
+      },
+      {
+        key: "requests.invalidRequest.auth.scopes",
+        message: "Referencing undefined variable: {{$ scopes}}",
       },
       {
         key: "requests.invalidRequest.body",
@@ -134,6 +159,14 @@ describe("validate", () => {
     restfile.push({
       id: "test",
       prompts: {},
+      auth: {
+        type: "oauth2",
+        grant: "client",
+        accessTokenUri: "{{! accessTokenUri}}",
+        clientId: "{{! clientId}}",
+        clientSecret: "{{! clientSecret}}",
+        scopes: "{{! scopes}}"
+      },
       http: `GET http://example.com HTTP/1.1
       
       {{! a}}
@@ -149,8 +182,73 @@ describe("validate", () => {
         message: "Reference to undefined secret: a",
       },
       {
+        key: "requests.test.auth.accessTokenUri",
+        message: "Referencing undefined secret: accessTokenUri",
+      },
+      {
+        key: "requests.test.auth.clientId",
+        message: "Referencing undefined secret: clientId",
+      },
+      {
+        key: "requests.test.auth.clientSecret",
+        message: "Referencing undefined secret: clientSecret",
+      },
+      {
+        key: "requests.test.auth.scopes",
+        message: "Referencing undefined secret: scopes",
+      },
+      {
         key: "requests.test.tests.test",
         message: "Reference to undefined secret: b",
+      },
+    ]);
+  });
+
+  it("should validate that all referenced prompts are defined", () => {
+    restfile.push({
+      id: "test",
+      prompts: {},
+      auth: {
+        type: "oauth2",
+        grant: "client",
+        accessTokenUri: "{{? accessTokenUri}}",
+        clientId: "{{? clientId}}",
+        clientSecret: "{{? clientSecret}}",
+        scopes: "{{? scopes}}"
+      },
+      http: `GET http://example.com HTTP/1.1
+      
+      {{? a}}
+      `,
+      tests: {
+        test: `{{? b}}`,
+      },
+    });
+
+    expect(validate(restfile)).toEqual([
+      {
+        key: "requests.test.http",
+        message: "Referencing undefined prompt: a",
+      },
+      {
+        key: "requests.test.auth.accessTokenUri",
+        message: "Referencing undefined prompt: accessTokenUri",
+      },
+      {
+        key: "requests.test.auth.clientId",
+        message: "Referencing undefined prompt: clientId",
+      },
+      {
+        key: "requests.test.auth.clientSecret",
+        message: "Referencing undefined prompt: clientSecret",
+      },
+      {
+        key: "requests.test.auth.scopes",
+        message: "Referencing undefined prompt: scopes",
+      },
+      {
+        key: "requests.test.tests.test",
+        message: "Referencing undefined prompt: b",
       },
     ]);
   });
@@ -224,6 +322,36 @@ describe("validate", () => {
       ]);
     });
 
+    it("should validate that defined prompt can be an empty string", () => {
+      restfile.push({
+        id: "test",
+        prompts: {
+          a: "",
+        },
+        http: `GET http://example.com HTTP/1.1
+        
+        {{? a}}
+        `,
+      });
+
+      expect(validate(restfile)).toEqual([]);
+    });
+
+    it("should validate that defined prompt can not be a non empty string", () => {
+      restfile.push({
+        id: "test",
+        prompts: {
+          a: "someValue",
+        },
+        http: `GET http://example.com HTTP/1.1
+        
+        {{? a}}
+        `,
+      });
+
+      expect(validate(restfile)).toEqual([]);
+    });
+
     it("should validate that defined prompt can not be an array", () => {
       restfile.push({
         id: "test",
@@ -252,10 +380,11 @@ describe("validate", () => {
           b: {
             default: "",
           },
+          c: ""
         },
         http: `GET http://example.com HTTP/1.1
         
-        {{? a}} {{? b}}
+        {{? a}} {{? b}} {{? c}}
         `,
       });
 
@@ -499,6 +628,565 @@ describe("validate", () => {
       describe("request.description", () => {
         // optional
         // is non zero length string
+      });
+
+      describe("request.auth", () => {
+        it("should validate that request.auth is not an array", () => {
+          restfile.push({
+            id: "test",
+            auth: [],
+            http: "GET http://example.com HTTP/1.1",
+          });
+    
+          expect(validate(restfile)).toEqual([
+            {
+              key: "requests.test.auth",
+              message: "Must be as an object",
+            },
+          ]);
+        });
+    
+        it("should validate that request.auth is not a string", () => {
+          restfile.push({
+            id: "test",
+            auth: "",
+            http: "GET http://example.com HTTP/1.1",
+          });
+    
+          expect(validate(restfile)).toEqual([
+            {
+              key: "requests.test.auth",
+              message: "Must be as an object",
+            },
+          ]);
+        });
+    
+        it("should validate that request.auth is not a number", () => {
+          restfile.push({
+            id: "test",
+            auth: 123,
+            http: "GET http://example.com HTTP/1.1",
+          });
+    
+          expect(validate(restfile)).toEqual([
+            {
+              key: "requests.test.auth",
+              message: "Must be as an object",
+            },
+          ]);
+        });
+
+        it("should validate that request.auth.type is required", () => {
+          restfile.push({
+            id: "test",
+            auth: {},
+            http: "GET http://example.com HTTP/1.1",
+          });
+    
+          expect(validate(restfile)).toEqual([
+            {
+              key: "requests.test.auth.type",
+              message: "Required but not defined",
+            },
+          ]);
+        });
+
+        describe("oauth2", () => {
+          describe("grant type: client", () => {
+            const validAuth: RestfileRequestAuth = {
+              type: RestfileRequestAuthType.OAUTH2,
+              grant: "client",
+              accessTokenUri: "expectedAccessTokenUri",
+              clientId: "expectedClientId",
+              clientSecret: "expectedClientSecret",
+              scopes: "expectedScope"
+            };
+  
+            it("should validate request.auth.type is required", () => {
+              const {type, ...auth} = validAuth;
+  
+              restfile.push({
+                id: "test",
+                auth,
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.type",
+                  message: "Required but not defined"
+                }
+              ]);
+            });
+  
+            it("should validate request.auth.type is required must be a valid value", () => {
+              restfile.push({
+                id: "test",
+                auth: {...validAuth, type: "invalidValue" as RestfileRequestAuthType},
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.type",
+                  message: `Must be one of the following values: ${RestfileRequestAuthType.OAUTH2}`
+                }
+              ]);
+            });
+
+            it("should validate request.auth oauth2 client grant is valid", () => {
+              restfile.push({
+                id: "test",
+                auth: {...validAuth},
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([]);
+            });
+
+            it("should validate request.auth oauth2 client grant is required", () => {
+              const {grant, ...auth} = validAuth;
+
+              restfile.push({
+                id: "test",
+                auth: {...auth},
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.grant",
+                  message: "Required but not defined"
+                }
+              ]);
+            });
+
+            it("should validate request.auth oauth2 client grant is invalid", () => {
+              restfile.push({
+                id: "test",
+                auth: {...validAuth, grant: "invalidGrant"},
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.grant",
+                  message: `Must be one of the following values: client`
+                }
+              ]);
+            });
+
+            it("should validate request.auth.clientId is required", () => {
+              const {clientId, ...auth} = validAuth;
+  
+              restfile.push({
+                id: "test",
+                auth,
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.clientId",
+                  message: "Required but not defined"
+                }
+              ]);
+            });
+
+            it("should validate request.auth.clientId is a string", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  clientId: ""
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([]);
+            });
+
+            it("should validate request.auth.clientId is not a number", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  clientId: 1234
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.clientId",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+
+            it("should validate request.auth.clientId is not an array", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  clientId: []
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.clientId",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+
+            it("should validate request.auth.clientId is not an object", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  clientId: {}
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.clientId",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+
+            it("should validate request.auth.clientId is not a function", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  clientId: () => {}
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.clientId",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+
+
+
+            it("should validate request.auth.clientSecret is required", () => {
+              const {clientSecret, ...auth} = validAuth;
+  
+              restfile.push({
+                id: "test",
+                auth,
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.clientSecret",
+                  message: "Required but not defined"
+                }
+              ]);
+            });
+
+            it("should validate request.auth.clientSecret is a string", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  clientSecret: ""
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([]);
+            });
+
+            it("should validate request.auth.clientSecret is not a number", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  clientSecret: 1234
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.clientSecret",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+
+            it("should validate request.auth.clientSecret is not an array", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  clientSecret: []
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.clientSecret",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+
+            it("should validate request.auth.clientSecret is not an object", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  clientSecret: {}
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.clientSecret",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+
+            it("should validate request.auth.clientSecret is not a function", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  clientSecret: () => {}
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.clientSecret",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+
+
+
+            it("should validate request.auth.accessTokenUri is required", () => {
+              const {accessTokenUri, ...auth} = validAuth;
+  
+              restfile.push({
+                id: "test",
+                auth,
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.accessTokenUri",
+                  message: "Required but not defined"
+                }
+              ]);
+            });
+
+            it("should validate request.auth.accessTokenUri is a string", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  accessTokenUri: ""
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([]);
+            });
+
+            it("should validate request.auth.accessTokenUri is not a number", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  accessTokenUri: 1234
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.accessTokenUri",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+
+            it("should validate request.auth.accessTokenUri is not an array", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  accessTokenUri: []
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.accessTokenUri",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+
+            it("should validate request.auth.accessTokenUri is not an object", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  accessTokenUri: {}
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.accessTokenUri",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+
+            it("should validate request.auth.accessTokenUri is not a function", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  accessTokenUri: () => {}
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.accessTokenUri",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+
+
+
+
+            it("should validate request.auth.scopes is optional", () => {
+              const {scopes, ...auth} = validAuth;
+  
+              restfile.push({
+                id: "test",
+                auth,
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([]);
+            });
+
+            it("should validate request.auth.scopes is a string", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  scopes: ""
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([]);
+            });
+
+            it("should validate request.auth.scopes is not a number", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  scopes: 1234
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.scopes",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+
+            it("should validate request.auth.scopes is not an array", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  scopes: []
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.scopes",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+
+            it("should validate request.auth.scopes is not an object", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  scopes: {}
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.scopes",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+
+            it("should validate request.auth.scopes is not a function", () => {
+              restfile.push({
+                id: "test",
+                auth: {
+                  ...validAuth,
+                  scopes: () => {}
+                },
+                http: "GET http://example.com HTTP/1.1",
+              });
+        
+              expect(validate(restfile)).toEqual([
+                {
+                  key: "requests.test.auth.scopes",
+                  message: "Must be a string"
+                }
+              ]);
+            });
+          });
+        });
       });
 
       describe("request.headers", () => {
