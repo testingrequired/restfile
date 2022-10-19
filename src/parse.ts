@@ -4,6 +4,7 @@ import { InputRestfile, RestfileRequestDocument } from ".";
 export const varGlyph = "$";
 export const secretGlyph = "!";
 export const promptGlyph = "?";
+export const refGlyph = "@";
 
 export const varTemplatePattern = new RegExp(
   `\{\{\\${varGlyph} (.*?)\}\}`,
@@ -15,6 +16,10 @@ export const secretTemplatePattern = new RegExp(
 );
 export const promptTemplatePattern = new RegExp(
   `\{\{\\${promptGlyph} (.*?)\}\}`,
+  "g"
+);
+export const refTemplatePattern = new RegExp(
+  `\{\{\\${refGlyph} (.*?)\}\}`,
   "g"
 );
 

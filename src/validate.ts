@@ -7,6 +7,7 @@ import {
   secretTemplatePattern,
   parseSecretKeys,
 } from "./parse";
+import { RestfileRequestAuthType } from "./restfile";
 
 export function validate(restfile: InputRestfile): ValidationError[] {
   const errors: ValidationError[] = [];
@@ -64,6 +65,7 @@ function validateAllRequestTemplateReferences(
   const secretKeys = parseSecretKeys(restfile);
 
   for (const request of requests.filter((x) => x)) {
+    // Check request.http for undefined variable references
     for (const match of request.http.matchAll(varTemplatePattern)) {
       if (dataKeys.includes(match[1])) continue;
 
@@ -73,7 +75,18 @@ function validateAllRequestTemplateReferences(
       });
     }
 
+    // Check request.http for undefined secret references
+    for (const match of request.http.matchAll(secretTemplatePattern)) {
+      if (secretKeys.includes(match[1] + "!")) continue;
+
+      errors.push({
+        key: `requests.${request.id}.http`,
+        message: `Reference to undefined secret: ${match[1]}`,
+      });
+    }
+
     if (request.headers) {
+      // Check request.headers for undefined variable references
       for (const [key, value] of Object.entries(request.headers)) {
         for (const match of value.matchAll(varTemplatePattern)) {
           if (dataKeys.includes(match[1])) continue;
@@ -84,9 +97,62 @@ function validateAllRequestTemplateReferences(
           });
         }
       }
+
+      // Check request.headers for undefined secret references
+      for (const [key, value] of Object.entries(request.headers)) {
+        for (const match of value.matchAll(secretTemplatePattern)) {
+          if (secretKeys.includes(match[1] + "!")) continue;
+  
+          errors.push({
+            key: `requests.${request.id}.headers.${key}`,
+            message: `Reference to undefined secret: ${match[1]}`,
+          });
+        }
+      }
+    }
+
+    if (request.auth) {
+      for (const key of Object.keys(request.auth)) {
+        if (typeof request.auth[key] === "string") {
+          for (const [_, ...matches] of request.auth[key].matchAll(
+            varTemplatePattern
+          )) {
+            const requestVarReferences = Array.from(new Set(matches));
+  
+            for (const requestVarReference of requestVarReferences) {
+              if (dataKeys.includes(requestVarReference)) {
+                continue;
+              }
+  
+              errors.push({
+                key: `requests.${request.id}.auth.${key}`,
+                message: `Referencing undefined variable: {{$ ${requestVarReference}}}`,
+              });
+            }
+          }
+          
+          for (const [_, ...matches] of request.auth[key].matchAll(
+            secretTemplatePattern
+          )) {
+            const requestSecretReferences = Array.from(new Set(matches));
+    
+            for (const requestSecretReference of requestSecretReferences) {
+              if (secretKeys.includes(requestSecretReference + "!")) {
+                continue;
+              }
+    
+              errors.push({
+                key: `requests.${request.id}.auth.${key}`,
+                message: `Referencing undefined secret: ${requestSecretReference}`,
+              });
+            }
+          }
+        }
+      }
     }
 
     if (request.body) {
+      // Check request.body for undefined variable references
       // TODO: toString is a cheat here
       for (const match of request.body
         .toString()
@@ -98,9 +164,23 @@ function validateAllRequestTemplateReferences(
           message: `Reference to undefined variable: ${match[0]}`,
         });
       }
+
+      // Check request.body for undefined secret references
+      // TODO: toString is a cheat here
+      for (const match of request.body
+        .toString()
+        .matchAll(secretTemplatePattern)) {
+        if (secretKeys.includes(match[1] + "!")) continue;
+  
+        errors.push({
+          key: `requests.${request.id}.body`,
+          message: `Reference to undefined secret: ${match[1]}`,
+        });
+      }
     }
 
     if (request.tests) {
+      // Check request.tests for undefined variable references
       for (const testId of Object.keys(request.tests)) {
         for (const match of request.tests[testId]
           .toString()
@@ -113,53 +193,14 @@ function validateAllRequestTemplateReferences(
           });
         }
       }
-    }
-  }
 
-  for (const request of requests.filter((x) => x)) {
-    for (const match of request.http.matchAll(secretTemplatePattern)) {
-      if (secretKeys.includes(match[1] + "!")) continue;
-
-      errors.push({
-        key: `requests.${request.id}.http`,
-        message: `Reference to undefined secret: ${match[1]}`,
-      });
-    }
-
-    if (request.headers) {
-      for (const [key, value] of Object.entries(request.headers)) {
-        for (const match of value.matchAll(secretTemplatePattern)) {
-          if (secretKeys.includes(match[1] + "!")) continue;
-
-          errors.push({
-            key: `requests.${request.id}.headers.${key}`,
-            message: `Reference to undefined secret: ${match[1]}`,
-          });
-        }
-      }
-    }
-
-    if (request.body) {
-      // TODO: toString is a cheat here
-      for (const match of request.body
-        .toString()
-        .matchAll(secretTemplatePattern)) {
-        if (secretKeys.includes(match[1] + "!")) continue;
-
-        errors.push({
-          key: `requests.${request.id}.body`,
-          message: `Reference to undefined secret: ${match[1]}`,
-        });
-      }
-    }
-
-    if (request.tests) {
+      // Check request.tests for undefined secret references
       for (const testId of Object.keys(request.tests)) {
         for (const match of request.tests[testId]
           .toString()
           .matchAll(secretTemplatePattern)) {
           if (secretKeys.includes(match[1] + "!")) continue;
-
+  
           errors.push({
             key: `requests.${request.id}.tests.${testId}`,
             message: `Reference to undefined secret: ${match[1]}`,
@@ -339,6 +380,89 @@ function validateRestFileTypes(restfile: InputRestfile): ValidationError[] {
         break;
     }
 
+    if (typeof request.auth !== "undefined") {
+      if (Array.isArray(request.auth) || typeof request.auth !== "object") {
+        errors.push({
+          key: `requests.${request.id}.auth`,
+          message: "Must be as an object",
+        });
+  
+        return errors;
+      }
+
+      if (typeof request.auth.type === "undefined") {
+        errors.push({
+          key: `requests.${request.id}.auth.type`,
+          message: "Required but not defined",
+        });
+      } else {
+        const valueKeys = Object.values(RestfileRequestAuthType);
+
+        if (!valueKeys.includes(request.auth.type as RestfileRequestAuthType)) {
+          errors.push({
+            key: `requests.${request.id}.auth.type`,
+            message: `Must be one of the following values: ${valueKeys.join(", ")}`,
+          });
+        }
+
+        if (typeof request.auth.grant === "undefined") {
+          errors.push({
+            key: `requests.${request.id}.auth.grant`,
+            message: "Required but not defined",
+          });
+        } else if (request.auth.grant !== "client") {
+          errors.push({
+            key: `requests.${request.id}.auth.grant`,
+            message: "Must be one of the following values: client",
+          });
+        }
+
+        if (typeof request.auth.clientId === "undefined") {
+          errors.push({
+            key: `requests.${request.id}.auth.clientId`,
+            message: "Required but not defined",
+          });
+        } else if(typeof request.auth.clientId !== "string") {
+          errors.push({
+            key: `requests.${request.id}.auth.clientId`,
+            message: "Must be a string",
+          });
+        }
+
+        if (typeof request.auth.clientSecret === "undefined") {
+          errors.push({
+            key: `requests.${request.id}.auth.clientSecret`,
+            message: "Required but not defined",
+          });
+        } else if(typeof request.auth.clientSecret !== "string") {
+          errors.push({
+            key: `requests.${request.id}.auth.clientSecret`,
+            message: "Must be a string",
+          });
+        }
+
+        if (typeof request.auth.accessTokenUri === "undefined") {
+          errors.push({
+            key: `requests.${request.id}.auth.accessTokenUri`,
+            message: "Required but not defined",
+          });
+        } else if(typeof request.auth.accessTokenUri !== "string") {
+          errors.push({
+            key: `requests.${request.id}.auth.accessTokenUri`,
+            message: "Must be a string",
+          });
+        }
+
+        if(typeof request.auth.scopes !== "undefined" 
+            && typeof request.auth.scopes !== "string") {
+          errors.push({
+            key: `requests.${request.id}.auth.scopes`,
+            message: "Must be a string",
+          });
+        }
+      }
+    }
+
     if (request?.headers) {
       if (
         typeof request.headers === "object" &&
@@ -415,6 +539,27 @@ function validateRequestPrompts(restfile: InputRestfile): ValidationError[] {
           key: `requests.${request.id}.http`,
           message: `Referencing undefined prompt: ${requestPromptReference}`,
         });
+      }
+    }
+
+    if (request.auth) {
+      for (const key of Object.keys(request.auth)) {
+        for (const [_, ...matches] of request.auth[key].matchAll(
+          promptTemplatePattern
+        )) {
+          const requestPromptReferences = Array.from(new Set(matches));
+
+          for (const requestPromptReference of requestPromptReferences) {
+            if (Object.keys(request.prompts).includes(requestPromptReference)) {
+              continue;
+            }
+
+            errors.push({
+              key: `requests.${request.id}.auth.${key}`,
+              message: `Referencing undefined prompt: ${requestPromptReference}`,
+            });
+          }
+        }
       }
     }
 

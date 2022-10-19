@@ -1,3 +1,5 @@
+import ClientOAuth2 from "client-oauth2";
+import Enquirer from "enquirer";
 import { Select } from "enquirer/lib/prompts";
 import { Form, FormPromptOptions } from "enquirer/lib/prompts";
 import * as path from "path";
@@ -6,7 +8,7 @@ import {
   mapFetchResponseToHTTPResponseString,
   runRequestTests,
 } from "../..";
-import { parseSecretKeys } from "../../parse";
+import { parseSecretKeys, refTemplatePattern } from "../../parse";
 
 import { InputRestfile, InputRestfileObject, Restfile } from "../../restfile";
 
@@ -31,6 +33,12 @@ export const builder = (yargs) =>
       alias: "e",
       describe: "Environment to load data for",
     })
+    .option("verbose", {
+      alias: "v",
+      type: "boolean",
+      describe: "Show additional information about the request",
+      default: false
+    })
     .option("dry", {
       alias: "d",
       type: "boolean",
@@ -53,6 +61,8 @@ export const builder = (yargs) =>
 async function runRequestPrompts<T = any>(
   inputRequestPrompts: Record<string, unknown>
 ): Promise<T> {
+  const enquirer = new Enquirer({stdout: process.stderr});
+  
   let prompts: FormPromptOptions[] = [];
 
   for (const [key, value] of Object.entries(inputRequestPrompts)) {
@@ -65,7 +75,13 @@ async function runRequestPrompts<T = any>(
       typeof value === "object" &&
       typeof (value as any).default != "undefined"
     ) {
-      prompt.initial = (value as any).default;
+      let defaultValue: unknown = (value as any).default;
+
+      if (typeof defaultValue !== "string") {
+        defaultValue = defaultValue.toString();
+      }
+
+      prompt.initial = defaultValue;
     }
 
     prompts.push(prompt);
@@ -168,10 +184,37 @@ export const handler = async (argv) => {
 
     const request = restfile.request(requestId, promptData);
 
-    console.log(request.http);
+    const refs: Record<string, string> = {};
+
+    if (request.auth) {
+      if (request.auth.type === "oauth2") {
+        if (request.auth["grant"] === "client") {
+            const client = new ClientOAuth2({
+              clientId: request.auth["clientId"],
+              clientSecret: request.auth["clientSecret"],
+              accessTokenUri: request.auth["accessTokenUri"],
+              scopes: request.auth["scopes"].split(",").map(x => x.trim())
+            });
+
+            const token = await client.credentials.getToken();
+      
+            refs["auth.token"] = token.accessToken;
+            refs["auth.header"] = `Authorization: Bearer ${token}`
+        }
+      }
+    }
+
+    for (const [pattern, key] of request.http.matchAll(refTemplatePattern)) {
+      const value = refs[key];
+      request.http = request.http.split(pattern).join(value);
+    }
 
     if (argv.dry) {
       return;
+    }
+
+    if (argv.verbose) {
+      console.log(request.http);
     }
 
     try {

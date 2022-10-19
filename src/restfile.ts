@@ -30,6 +30,15 @@ type RestfileRequestPrompt = {
   default: string;
 };
 
+export enum RestfileRequestAuthType {
+  OAUTH2 = "oauth2"
+}
+
+export type RestfileRequestAuth = {
+  type: RestfileRequestAuthType
+} & Record<string, string>
+
+
 /**
  * An individual REST request
  *
@@ -38,6 +47,7 @@ type RestfileRequestPrompt = {
 export interface RestfileRequestDocument {
   id: string;
   description?: string;
+  auth?: RestfileRequestAuth | Record<string, string>;
   prompts?: Record<string, string | RestfileRequestPrompt>;
   headers?: Record<string, string>;
   body?: Record<string, any> | string;
@@ -111,6 +121,7 @@ export class InputRestfileObject {
 export interface RestfileRequest {
   id: string;
   description?: string;
+  auth?: RestfileRequestAuth | Record<string, string>;
   http: string;
   tests?: Record<string, string>;
 }
@@ -218,7 +229,7 @@ export class Restfile {
     requestDocument: RestfileRequestDocument,
     promptData: Record<string, string> = {}
   ): RestfileRequest {
-    const { prompts, tests } = requestDocument;
+    const { prompts, auth, tests } = requestDocument;
     let http = requestDocument.http;
 
     if (requestDocument.headers) {
@@ -232,6 +243,22 @@ export class Restfile {
       });
 
       http = buildHttp(httpObj);
+    }
+
+    if (auth) {
+      for (let key of Object.keys(auth)) {
+        let value = auth[key];
+        
+        for (const [pattern, key] of value.matchAll(varTemplatePattern)) {
+          value = value.split(pattern).join(this.#data[key]);
+        }
+
+        for (const [pattern, key] of value.matchAll(secretTemplatePattern)) {
+          value = value.split(pattern).join(this.#secrets[key]);
+        }
+
+        auth[key] = value;
+      }
     }
 
     for (const [pattern, key] of http.matchAll(varTemplatePattern)) {
@@ -324,6 +351,7 @@ export class Restfile {
     return {
       id: requestDocument.id,
       description: requestDocument.description,
+      auth,
       http,
       tests,
     };

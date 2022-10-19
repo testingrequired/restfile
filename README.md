@@ -8,7 +8,7 @@ restfile is a specification for storing HTTP requests in an easy to read and wri
 
 - HTTP request messages as [requests](#requests)
 - HTTP response messages as [tests](#tests)
-- [Templating](#templating) in [requests](#requests) with [variables](#environmental-data), [prompts](#prompts), and [secrets](#secrets)
+- [Templating](#templating) in [requests](#requests) with [variables](#environmental-data), [prompts](#prompts), [secrets](#secrets), and [references](#references)
 
 ## Goals
 
@@ -184,6 +184,7 @@ All remaining documents in the restfile are request doucments.
 interface RequestDocument {
   id: string;
   description?: string;
+  auth: Record<string, string>;
   prompts?: Record<string, string | { default: string }>;
   http: string;
   tests?: Record<string, string>;
@@ -251,9 +252,49 @@ http: |+
 
 ```
 
+#### References
+
+In addition to variables, secrets and prompts request templating also provides *references*: `{{@ path.to.ref}}` References are values not provided by the user but to them. See [Auth](#auth) below for an example.
+
+#### Auth
+
+Authentication (e.g. OAuth2, Basic Auth) defines how a request sends it's credentials if any are sent. Currently the only auth type supported is `oauth2` and the only grant type supported is `client`.
+
+The access token is available through a template reference `{{@ auth.token}}`.
+
+<!-- prettier-ignore -->
+```yaml
+name: Auth example
+envs: []
+---
+# Secrets
+clientSecret!:
+
+# Variables
+baseUrl: https://example.com
+accessTokenUri: https://example.com/v1/token
+clientId: exampleClientKey
+---
+id: get-item-by-id
+auth:
+  type: oauth2
+  grant: client
+  accessTokenUri: "{{$ accessTokenUri}}"
+  clientId: "{{$ clientId}}"
+  clientSecret: "{{! clientSecret}}"
+  scopes: profile
+prompts:
+  itemId:
+    default: 123456
+http: |+
+  GET {{$ baseUrl}}/items/{{? itemId}} HTTP/1.1
+  accept: application/json
+  authorization: Bearer {{@ auth.token}}
+```
+
 #### Templating
 
-Templating allows variables, secrets, prompts to be used in `request.http`: `{{$ varName}}`, `{{! secretName}}`, `{{? promptName}}`
+Templating allows variables, secrets, prompts to be used in `request.http`: `{{$ varName}}`, `{{! secretName}}`, `{{? promptName}}`, `{{@ refs}}`
 
 <!-- prettier-ignore -->
 ```yaml
