@@ -122,6 +122,12 @@ export function parseSecretKeys(restfile: InputRestfile): string[] {
   return Object.keys(envData);
 }
 
+export function parseMissingSecretKeys(restfile: InputRestfile, secrets: Record<string, any>): string[] {
+  return parseSecretKeys(restfile)
+    .map(key => key.substring(0, key.length - 1))
+    .filter(key => !Object.keys(secrets).includes(key));
+}
+
 /**
  *
  * @param {InputRestFile} restfile Target RestFile to parse secrets from

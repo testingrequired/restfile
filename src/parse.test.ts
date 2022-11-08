@@ -1,5 +1,5 @@
 import { InputRestfile } from ".";
-import { parseData, parseSecrets } from "./parse";
+import { parseData, parseMissingSecretKeys, parseSecretKeys, parseSecrets } from "./parse";
 import { validRestFile } from "./testHelpers";
 
 describe("parseData", () => {
@@ -37,6 +37,44 @@ describe("parseData", () => {
     data.prod = {};
 
     expect(parseData(restfile, "prod")).toEqual({ foo: data.foo });
+  });
+});
+
+describe("parseSecretKeys", () => {
+  let restfile: InputRestfile;
+
+  beforeEach(() => {
+    restfile = [
+      { name: "Test", envs: ["prod"] },
+      {
+        "foo!": "",
+        "bar": ""
+      },
+    ];
+  });
+
+  it("should return object of resolved secrets from data document in restfile", () => {
+    expect(parseSecretKeys(restfile)).toEqual(["foo!"]);
+  });
+});
+
+describe("parseMissingSecretKeys", () => {
+  const secrets = {};
+
+  let restfile: InputRestfile;
+
+  beforeEach(() => {
+    restfile = [
+      { name: "Test", envs: ["prod"] },
+      {
+        "foo!": "",
+        "bar": ""
+      },
+    ];
+  });
+
+  it("should return object of resolved secrets from data document in restfile", () => {
+    expect(parseMissingSecretKeys(restfile, secrets)).toEqual(["foo"]);
   });
 });
 

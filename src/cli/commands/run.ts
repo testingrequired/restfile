@@ -1,5 +1,4 @@
 import ClientOAuth2 from "client-oauth2";
-import Enquirer from "enquirer";
 import { Select } from "enquirer/lib/prompts";
 import { Form, FormPromptOptions } from "enquirer/lib/prompts";
 import * as path from "path";
@@ -8,7 +7,7 @@ import {
   mapFetchResponseToHTTPResponseString,
   runRequestTests,
 } from "../..";
-import { parseSecretKeys, refTemplatePattern } from "../../parse";
+import { parseMissingSecretKeys, refTemplatePattern } from "../../parse";
 
 import { InputRestfile, InputRestfileObject, Restfile } from "../../restfile";
 
@@ -61,8 +60,6 @@ export const builder = (yargs) =>
 async function runRequestPrompts<T = any>(
   inputRequestPrompts: Record<string, unknown>
 ): Promise<T> {
-  const enquirer = new Enquirer({stdout: process.stderr});
-  
   let prompts: FormPromptOptions[] = [];
 
   for (const [key, value] of Object.entries(inputRequestPrompts)) {
@@ -125,13 +122,9 @@ export const handler = async (argv) => {
     return;
   }
 
-  const missingSecretKeys = parseSecretKeys(inputRestfile)
-    .map(key => key.substring(0, key.length - 1))
-    .filter(key => !Object.keys(argv.secrets).includes(key));
-
   let prompts: FormPromptOptions[] = [];
 
-  for (const key of missingSecretKeys) {
+  for (const key of parseMissingSecretKeys(inputRestfile, argv.secrets)) {
     const prompt: FormPromptOptions = {
       name: key,
       message: key,
@@ -140,7 +133,7 @@ export const handler = async (argv) => {
     prompts.push(prompt);
   }
 
-  let promptData: Record<string, string> = {}
+  let secretsDataFromPrompts: Record<string, string> = {}
 
   if (prompts.length > 0) {
     const formPrompt = new Form({
@@ -149,10 +142,10 @@ export const handler = async (argv) => {
       choices: prompts,
     });
   
-    promptData = await formPrompt.run().then( () => process.stdin.resume() );
+    secretsDataFromPrompts = await formPrompt.run().then( () => process.stdin.resume() );
   }
   
-  const secrets = Object.assign({}, argv.secrets, promptData);
+  const secrets = Object.assign({}, argv.secrets, secretsDataFromPrompts);
 
   const restfile = Restfile.parse(inputRestfile, argv.env, secrets);
 
@@ -174,89 +167,93 @@ export const handler = async (argv) => {
   }
 
   const inputRestFileObj = InputRestfileObject.from(inputRestfile);
+
   let inputRequest = inputRestFileObj.request(requestId);
 
-  if (inputRequest) {
-    let promptData = {};
-    if (inputRequest.prompts) {
-      promptData = await runRequestPrompts(inputRequest.prompts);
-    }
-
-    const request = restfile.request(requestId, promptData);
-
-    const refs: Record<string, string> = {};
-
-    if (request.auth) {
-      if (request.auth.type === "oauth2") {
-        if (request.auth["grant"] === "client") {
-            const client = new ClientOAuth2({
-              clientId: request.auth["clientId"],
-              clientSecret: request.auth["clientSecret"],
-              accessTokenUri: request.auth["accessTokenUri"],
-              scopes: request.auth["scopes"].split(",").map(x => x.trim())
-            });
-
-            const token = await client.credentials.getToken();
-      
-            refs["auth.token"] = token.accessToken;
-            refs["auth.header"] = `Authorization: Bearer ${token}`
-        }
-      }
-    }
-
-    for (const [pattern, key] of request.http.matchAll(refTemplatePattern)) {
-      const value = refs[key];
-      request.http = request.http.split(pattern).join(value);
-    }
-
-    if (argv.dry) {
-      return;
-    }
-
-    if (argv.verbose) {
-      console.log(request.http);
-    }
-
-    try {
-      const response = await executeRequest(request);
-
-      const responseBody = await response.text();
-
-      const httpResponseString = await mapFetchResponseToHTTPResponseString(
-        response,
-        responseBody
-      );
-
-      console.log(httpResponseString);
-
-      if (argv.test) {
-        if (!request.tests) {
-          console.log("Request has no tests");
-          return;
-        }
-
-        const testErrors: Record<string, Error> = runRequestTests(
-          request,
-          httpResponseString
-        );
-
-        if (Object.keys(testErrors).length > 0) {
-          console.log(
-            `Test Errors:\n\n${Object.entries(testErrors)
-              .map(([testId, e]) => `${testId}: ${e.message}`)
-              .join("\n")}`
-          );
-        }
-      }
-    } catch (e) {
-      console.log(`An unexpected error occured while executing the request: ${e.message}`)
-    }
-  } else {
+  if (!inputRequest) {
     console.log(
       [
         `Request not found: ${requestId}`,
         `Available Requests:\n\n${restfile.requestIds.join("\n")}`,
       ].join("\n")
     );
+
+    return;
+  }
+
+  let promptData = {};
+  
+  if (inputRequest.prompts) {
+    promptData = await runRequestPrompts(inputRequest.prompts);
+  }
+
+  const request = restfile.request(requestId, promptData);
+
+  const refs: Record<string, string> = {};
+
+  if (request.auth) {
+    if (request.auth.type === "oauth2") {
+      if (request.auth["grant"] === "client") {
+          const client = new ClientOAuth2({
+            clientId: request.auth["clientId"],
+            clientSecret: request.auth["clientSecret"],
+            accessTokenUri: request.auth["accessTokenUri"],
+            scopes: request.auth["scopes"].split(",").map(x => x.trim())
+          });
+
+          const token = await client.credentials.getToken();
+    
+          refs["auth.token"] = token.accessToken;
+          refs["auth.header"] = `Authorization: Bearer ${token}`
+      }
+    }
+  }
+
+  for (const [pattern, key] of request.http.matchAll(refTemplatePattern)) {
+    const value = refs[key];
+    request.http = request.http.split(pattern).join(value);
+  }
+
+  if (argv.dry) {
+    return;
+  }
+
+  if (argv.verbose) {
+    console.log(request.http);
+  }
+
+  try {
+    const response = await executeRequest(request);
+
+    const responseBody = await response.text();
+
+    const httpResponseString = await mapFetchResponseToHTTPResponseString(
+      response,
+      responseBody
+    );
+
+    console.log(httpResponseString);
+
+    if (argv.test) {
+      if (!request.tests) {
+        console.log("Request has no tests");
+        return;
+      }
+
+      const testErrors: Record<string, Error> = runRequestTests(
+        request,
+        httpResponseString
+      );
+
+      if (Object.keys(testErrors).length > 0) {
+        console.log(
+          `Test Errors:\n\n${Object.entries(testErrors)
+            .map(([testId, e]) => `${testId}: ${e.message}`)
+            .join("\n")}`
+        );
+      }
+    }
+  } catch (e) {
+    console.log(`An unexpected error occured while executing the request: ${e.message}`)
   }
 };
