@@ -55,6 +55,12 @@ export const builder = (yargs) =>
       alias: "s",
       describe: "Pass secrets to request",
       default: {}
+    })
+    .option("format-response-body", {
+      alias: "f",
+      type: "boolean",
+      describe: "Attempt to format response body (only supports JSON currently)",
+      default: false,
     });
 
 async function runRequestPrompts<T = any>(
@@ -225,7 +231,14 @@ export const handler = async (argv) => {
   try {
     const response = await executeRequest(request);
 
-    const responseBody = await response.text();
+    let responseBody = await response.text();
+
+    if (argv.f) {
+      try {
+        const json = JSON.parse(responseBody);
+        responseBody = JSON.stringify(json, null, 2);
+      } catch (e) {}
+    }
 
     const httpResponseString = await mapFetchResponseToHTTPResponseString(
       response,
