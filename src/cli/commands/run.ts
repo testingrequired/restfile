@@ -53,7 +53,13 @@ export const builder = (yargs) =>
     .option("secrets", {
       type: "object",
       alias: "s",
-      describe: "Pass secrets to request",
+      describe: "Pass secrets data to request",
+      default: {}
+    })
+    .option("prompts", {
+      type: "object",
+      alias: "p",
+      describe: "Pass prompt data to request",
       default: {}
     })
     .option("format-response-body", {
@@ -109,7 +115,7 @@ export const handler = async (argv) => {
   const requestId = await getOrPromptRequestIdToRun(argv.requestId, restfile);
 
   // Get prompts from prompts
-  const promptData = await getPromptsData(inputRestfile, requestId);
+  const promptData = await getPromptsData(inputRestfile, requestId, argv.prompts);
 
   // Parse the request with the prompt data
   const request = restfile.request(requestId, promptData);
@@ -311,13 +317,56 @@ function getInputRequestById(inputRestfile: InputRestfile, requestId: string): R
   return inputRequest;
 }
 
-async function getPromptsData(inputRestfile: InputRestfile, requestId: string) {
+async function getPromptsData(inputRestfile: InputRestfile, requestId: string, promptsFromArgs: Record<string, string>) {
   const inputRequest = getInputRequestById(inputRestfile, requestId);
 
   // Prompt user for the request's prompt data
   let promptData = {};
+  
   if (inputRequest.prompts) {
-    promptData = await runRequestPrompts(inputRequest.prompts);
+    const requestPromptKeys = Object.keys(inputRequest.prompts);
+    const missingKeys = requestPromptKeys
+      .filter(key => !Object.keys(promptsFromArgs).includes(key));
+
+    let prompts: FormPromptOptions[] = [];
+
+    for (const key of missingKeys) {
+      const prompt: FormPromptOptions = {
+        name: key,
+        message: key,
+      };
+
+      const value = inputRequest.prompts[key];
+
+      if (
+        typeof value === "object" &&
+        typeof (value as any).default != "undefined"
+      ) {
+        let defaultValue: unknown = (value as any).default;
+
+        if (typeof defaultValue !== "string") {
+          defaultValue = defaultValue.toString();
+        }
+
+        prompt.initial = defaultValue;
+      }
+
+      prompts.push(prompt);
+    }
+
+    let promptDataFromPrompts = {};
+
+    if (prompts.length > 0) {
+      const formPrompt = new Form({
+        name: "prompts",
+        message: "Please Fill In Request Prompts:",
+        choices: prompts,
+      });
+
+      promptDataFromPrompts = await formPrompt.run()
+    }
+
+    promptData = {...promptsFromArgs, ...promptDataFromPrompts};
   }
 
   return promptData;
