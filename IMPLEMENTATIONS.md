@@ -77,6 +77,14 @@ X-Content-Type-Options: nosniff
 [{"country_code3":"USA","continent_code":"NA","latitude":"37.751","longitude":"-97.822","accuracy":1000,"organization_name":"GOOGLE","timezone":"America\/Chicago","asn":15169,"organization":"AS15169 GOOGLE","country_code":"US","area_code":"0","ip":"8.8.8.8","country":"United States"}]
 ```
 
+### Passing Secrets & Prompts as CLI arguments 
+
+You can pass prompt (`-prompts`/`-p`) and secret (`-secrets`/`-s`) data as arguments to the CLI to avoid being prompted for them when running a request.
+
+```bash
+$ restfile run restfile.yml get-user-by-id -s.someSecret "f4n2..." -p.userId "user1f..."
+```
+
 #### Tests
 
 If a request has tests defined you can run those by including the `--test` or `-t` flag. It will display a diff between the test's expected response and the actual response.
